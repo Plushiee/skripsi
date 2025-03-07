@@ -1,0 +1,160 @@
+html, body {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+}
+
+#time-icon {
+    font-size: 2em;
+}
+
+#current-time {
+    font-size: 1.2em;
+}
+
+.icon-sun {
+    color: gold;
+}
+
+.icon-moon {
+    color: silver;
+}
+
+.cards-wrapper {
+    display: flex;
+    justify-content: center;
+    height: 180px;
+}
+
+.card img {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.card-carousel {
+    margin: 0 0.5em;
+    padding: 0;
+    box-shadow: 2px 6px 8px 0 rgba(22, 22, 26, 0.18);
+    border: none;
+    border-radius: 0;
+    width : 100%;
+}
+
+.card-body-carousel {
+    height: 180px;
+    max-height: 180px;
+}
+
+.carousel-inner-card {
+    padding: 1em;
+}
+
+.carousel-control-prev-card,
+.carousel-control-next-card{
+    width: 5vh;
+    height: 5vh;
+    border-radius: 50%;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+@media (min-width: 996px) {
+    .card img {
+        height: 11em;
+    }
+}
+
+#fluid-meter,
+#chartDiv {
+    width: 100%;
+    max-width: 300px;
+
+    height: auto;
+}
+
+#canvas-holder canvas {
+    max-height: 200px;
+    max-width: 400px;
+    margin: 0 auto;
+    /* Untuk meratakan di tengah */
+    /* Adjust the height as needed */
+}
+
+.carousel-inner {
+    height: 300px;
+}
+
+.container-fluid {
+    height: 100%;
+}
+
+.carousel-item .text-center {
+    width: 100%;
+}
+
+canvas {
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.carousel-control-prev-icon {
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23000000' viewBox='0 0 8 8'%3E%3Cpath d='M5.25 0l-4 4 4 4 1.5-1.5-2.5-2.5 2.5-2.5-1.5-1.5z'/%3E%3C/svg%3E") !important;
+}
+
+.carousel-control-next-icon {
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23000000' viewBox='0 0 8 8'%3E%3Cpath d='M2.75 0l-1.5 1.5 2.5 2.5-2.5 2.5 1.5 1.5 4-4-4-4z'/%3E%3C/svg%3E") !important;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+.custom-height {
+    height: 30px;
+    padding: 5px;
+    font-size: 14px;
+    width: auto;
+}
+
+#btn-plus,
+#btn-minus {
+    height: 30px;
+    width: 15px;
+}
+
+i.fa-plus-circle,
+i.fa-minus-circle {
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.green-shadow {
+    color: green;
+    text-shadow: 0 0 10px green;
+}
+
+.red-shadow {
+    color: red;
+    text-shadow: 0 0 10px red;
+}
+
+#login-form, #register-form {
+    text-align: start !important;
+}
+
+label {
+    font-weight: bold !important;
+}
+
+.swal2-actions {
+    margin-top: 0 !important;
+}

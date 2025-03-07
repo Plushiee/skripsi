@@ -1,0 +1,77 @@
+html,
+body,
+.intro {
+    height: 100%;
+}
+
+thead th {
+    color: #fff;
+}
+
+.card {
+    border-radius: .5rem;
+}
+
+.table-scroll {
+    border-radius: .5rem;
+}
+
+.table-scroll table thead th {
+    font-size: 1.25rem;
+}
+
+thead {
+    top: 0;
+    position: sticky;
+}
+
+th {
+    background-color: #008000 !important;
+    color: #fff !important;
+}
+
+.accordion-button, #resetButton {
+    background-color: #008000 !important;
+    color: #fff !important;
+    font-weight: bold !important;
+}
+
+.accordion-button:after {
+    background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffffff'><path fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/></svg>") !important;
+  }
+
+@media (max-width: 768px) {
+
+    .fixed-table-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .fixed-table-toolbar .bs-bars,
+    .fixed-table-toolbar .columns,
+    .fixed-table-toolbar .export,
+    .fixed-table-toolbar .search {
+        margin-bottom: 10px;
+        /* Optional: tambahkan margin untuk spasi antar elemen */
+        display: flex;
+        align-items: center;
+    }
+
+    .fixed-table-toolbar .export .dropdown-menu {
+        left: auto;
+        right: 0;
+    }
+
+    .export.btn-group{
+        margin: 0;
+    }
+    .search {
+        margin-left: 5px;
+    }
+
+    .bs-bars {
+        margin: 0 5px;
+    }
+}

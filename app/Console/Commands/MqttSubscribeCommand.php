@@ -95,7 +95,7 @@ class MqttSubscribeCommand extends Command
         match ($topic) {
             '72210456/waterflow' => $this->koleksiData['arusAir'] = $message,
             '72210456/TDS' => $this->koleksiData['tds'] = $message,
-            '72210456/PH' => $this->koleksiData['ph'] = $message,
+            // '72210456/PH' => $this->koleksiData['ph'] = $message,
             '72210456/humidityDHT' => $this->koleksiData['tempHum']['humidity'] = $message,
             '72210456/temp_luar' => $this->koleksiData['tempHum']['temperature'] = $message,
             '72210456/ping' => $this->koleksiData['ping'] = $message,
@@ -121,7 +121,7 @@ class MqttSubscribeCommand extends Command
         return isset(
             $this->koleksiData['arusAir'],
             $this->koleksiData['tds'],
-            $this->koleksiData['ph'],
+            // $this->koleksiData['ph'],
             $this->koleksiData['tempHum']['temperature'],
             $this->koleksiData['tempHum']['humidity'],
             $this->koleksiData['ping'],

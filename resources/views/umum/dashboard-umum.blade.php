@@ -426,7 +426,7 @@
                         null);
                     updateVolume(data.arusAir || 0);
                     updateTDS(data.tds || 0);
-                    updateStatus(data.status || 0);
+                    updateStatus(data.status_sensor || 0);
 
                     window.myGauge.data.datasets[0].value = data.arusAir || 0;
                     window.myGauge.update();

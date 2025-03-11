@@ -32,7 +32,8 @@ class MqttSubscribeCommand extends Command
             'humidity' => null,
         ],
         'ping' => null,
-        'status' => null,
+        'status_sensor' => null,
+        'status_relay' => null,
     ];
 
     public function __construct()
@@ -60,6 +61,7 @@ class MqttSubscribeCommand extends Command
                     '72210456/TDS',
                     '72210456/ping',
                     '72210456/esp8266_sensor',
+                    '72210456/esp8266_relay',
                     '72210456/PH',
                     '72210456/temp_luar',
                     '72210456/temp_dalam',
@@ -99,7 +101,8 @@ class MqttSubscribeCommand extends Command
             '72210456/humidityDHT' => $this->koleksiData['tempHum']['humidity'] = $message,
             '72210456/temp_luar' => $this->koleksiData['tempHum']['temperature'] = $message,
             '72210456/ping' => $this->koleksiData['ping'] = $message,
-            '72210456/esp8266_sensor' => $this->koleksiData['status'] = $message,
+            '72210456/esp8266_sensor' => $this->koleksiData['status_sensor'] = $message,
+            '72210456/esp8266_relay' => $this->koleksiData['status_relay'] = $message,
             default => null,
         };
 
@@ -125,7 +128,8 @@ class MqttSubscribeCommand extends Command
             $this->koleksiData['tempHum']['temperature'],
             $this->koleksiData['tempHum']['humidity'],
             $this->koleksiData['ping'],
-            $this->koleksiData['status']
+            $this->koleksiData['status_sensor'],
+            $this->koleksiData['status_relay']
         );
     }
 
@@ -141,7 +145,8 @@ class MqttSubscribeCommand extends Command
                 'humidity' => null,
             ],
             'ping' => null,
-            'status' => null,
+            'status_sensor' => null,
+            'status_relay' => null,
         ];
     }
 
@@ -170,8 +175,12 @@ class MqttSubscribeCommand extends Command
                 TabelPingModel::create(['id_area' => 1, 'ping' => $message]);
                 break;
             case '72210456/esp8266_sensor':
-                $this->koleksiData['status'] = $message;
-                // Log::info('Status: ' . $message);
+                $this->koleksiData['status_sensor'] = $message;
+                // Log::info('status_sensor: ' . $message);
+                break;
+            case '72210456/esp8266_relay':
+                $this->koleksiData['status_relay'] = $message;
+                // Log::info('status_sensor: ' . $message);
                 break;
         }
     }

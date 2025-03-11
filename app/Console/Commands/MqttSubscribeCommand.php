@@ -68,7 +68,7 @@ class MqttSubscribeCommand extends Command
                 // Subscribe to each topic
                 foreach ($topics as $topic) {
                     $mqtt->subscribe($topic, function (string $topic, string $message) {
-                        // echo sprintf("Received message on topic [%s]: %s\n", $topic, $message);
+                        echo sprintf("Received message on topic [%s]: %s\n", $topic, $message);
                         $this->handleMessage($topic, $message);
                     }, 0);
                 }
@@ -104,11 +104,11 @@ class MqttSubscribeCommand extends Command
         };
 
         // Kirim ke cache jika semua data telah diterima
-        if ($this->isAllDataCollected()) {
+        // if ($this->isAllDataCollected()) {
             // echo sprintf('Data lengkap, menyimpan ke cache: ', $this->koleksiData);
-            cache()->put('sse-update-event', $this->koleksiData, now()->addSeconds(10));
-            $this->resetkoleksiData();
-        }
+            cache()->put('sse-update-event', $this->koleksiData, now()->addSeconds(5));
+            // $this->resetkoleksiData();
+        // }
 
 
         // Simpan ke database sesuai topik

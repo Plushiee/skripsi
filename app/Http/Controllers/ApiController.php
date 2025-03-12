@@ -560,7 +560,8 @@ class ApiController extends Controller
                             'humidity' => $cachedData['tempHum']['humidity'] ?? 0,
                         ],
                         'arusAir' => $cachedData['arusAir'] ?? 0,
-                        'status'=> $cachedData['status'] ?? 0,
+                        'status_sensor'=> $cachedData['status_sensor'] == "true" ? 1 : 0,
+                        'status_relay'=> $cachedData['status_relay'] == "true" ? 1 : 0,
                     ];
 
                     // Kirim data sebagai event SSE

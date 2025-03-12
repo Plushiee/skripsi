@@ -147,6 +147,11 @@ i.fa-minus-circle {
     text-shadow: 0 0 10px red;
 }
 
+.yellow-shadow {
+    color: rgb(255, 213, 0);
+    text-shadow: 0 0 10px rgb(255, 213, 0);
+}
+
 #login-form, #register-form {
     text-align: start !important;
 }

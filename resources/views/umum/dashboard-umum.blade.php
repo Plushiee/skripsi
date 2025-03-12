@@ -64,7 +64,7 @@
                                 <div class="card-body card-body-carousel">
                                     <h5 class="card-title mb-3">Status Mesin</h5>
                                     <div class="text-center my-4">
-                                        <h4 id="status" class="text-center"><i class="fa fa-circle red-shadow mb-4" aria-hidden="true"
+                                        <h5 id="status" class="text-center"><i class="fa fa-circle red-shadow mb-4" aria-hidden="true"
                                                 id="iot-status-icon"></i><br>OFFLINE</h4>
                                     </div>
                                 </div>
@@ -285,13 +285,22 @@
             }
 
             // MQTT Status
-            function updateStatus(status) {
+            function updateStatus(status_sensor, status_relay) {
                 var displayElement = $("#status");
-                if (status == 1) {
+                if (status_sensor == 1 & status_relay == 1) {
                     displayElement.html(
-                        "<i class='fa fa-circle green-shadow mb-4' aria-hidden='true' id='iot-status-icon'></i><br>ONLINE"
+                        "<i class='fa fa-circle green-shadow mb-4' aria-hidden='true' id='iot-status-icon'></i><br>OK"
                     );
-                } else {
+                } else if (status_sensor == 1 & status_relay == 0) {
+                    displayElement.html(
+                       "<i class='fa fa-circle yellow-shadow mb-4' aria-hidden='true' id='iot-status-icon'></i><br>Relay"
+                    );
+                } else if (status_sensor == 0 & status_relay == 1) {
+                    displayElement.html(
+                        "<i class='fa fa-circle yellow-shadow mb-4' aria-hidden='true' id='iot-status-icon'></i><br>Sensor"
+                    );
+                }
+                else {
                     displayElement.html(
                         "<i class='fa fa-circle red-shadow mb-4' aria-hidden='true' id='iot-status-icon'></i><br>OFFLINE"
                     );
@@ -426,7 +435,9 @@
                         null);
                     updateVolume(data.arusAir || 0);
                     updateTDS(data.tds || 0);
-                    updateStatus(data.status_sensor || 0);
+                    updateStatus(data.status_sensor, data.status_relay);
+
+                    console.log(data);
 
                     window.myGauge.data.datasets[0].value = data.arusAir || 0;
                     window.myGauge.update();

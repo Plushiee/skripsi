@@ -437,17 +437,18 @@
             $('#temperature-input').change(updateVisibility);
 
             // Fungsi: Periksa Suhu dan Otomatisasi
-            function checkTemperature() {
+            function checkTemperature(sendmqtt = true) {
                 let temperatureUser = parseFloat($inputNumber.val()) || 25.0;
 
                 if ($('#automatic-switch').is(':checked')) {
                     if (temperatureThreshold < temperatureUser) {
                         isAutomatic = true;
                         pumpStatus = 'nyala';
-                        sendPompaStatus(pumpStatus, isAutomatic);
                     } else if (temperatureThreshold >= temperatureUser) {
                         isAutomatic = true;
                         pumpStatus = 'mati';
+                    }
+                    if (sendmqtt) {
                         sendPompaStatus(pumpStatus, isAutomatic);
                     }
                 }
@@ -455,26 +456,39 @@
                 updatePumpStatus(pumpStatus);
             }
 
-            setTimeout(checkTemperature, 1000);
+            // setTimeout(checkTemperature, 1000);
 
             // Fungsi: Kirim Status Pompa
             function sendPompaStatus(status, otomatis = false) {
                 updatePumpStatus(status);
 
+                console.log("Menutup EventSource");
+                if (window.eventSource instanceof EventSource) {
+                    window.eventSource.close();
+                    window.eventSource = null;
+                }
+                console.log("Mengirim permintaan AJAX");
+
                 $.ajax({
-                    url: `{{ route('api.post.pompa') }}`,
+                    url: '{{ route('api.post.pompa') }}',
                     type: 'POST',
                     data: {
                         _token: '{{ csrf_token() }}',
                         status: status,
                         otomatis: otomatis,
-                        suhu: $inputNumber.val()
+                        suhu: $('#temperature-input').val()
                     },
-                    success: function() {
-                        console.log(`Pompa berhasil diatur ke status: ${status}`);
+                    success: function(response) {
+                        // Buka kembali event source setelah AJAX berhasil
+                        window.eventSource = new EventSource("{{ route('api.get.sse') }}");
                     },
                     error: function(response) {
-                        console.error('Gagal mengirim status pompa:', response.responseText);
+                        alert.fire({
+                            icon: 'error',
+                            title: 'Gagal mengirim perintah ke API!'
+                        });
+                        // Buka kembali event source meskipun terjadi error
+                        window.eventSource = new EventSource("{{ route('api.get.sse') }}");
                     }
                 });
             }
@@ -493,28 +507,8 @@
                 }
             }
 
-            // Function Send Pompa to Database
-            function sendPompaStatus(status, otomatis = false) {
-                $.ajax({
-                    url: '{{ route('api.post.pompa') }}',
-                    type: 'POST',
-                    data: {
-                        _token: '{{ csrf_token() }}',
-                        status: status,
-                        otomatis: otomatis,
-                        suhu: $('#temperature-input').val()
-                    },
-                    error: function(response) {
-                        alert.fire({
-                            icon: 'error',
-                            title: 'Gagal mengirim perintah ke API!'
-                        });
-                    }
-                });
-            }
-
             // MQTT Udara
-            function updateTemperatureHumidity(temperature, humidity) {
+            function updateTemperatureHumidity(temperature, humidity, sendmqtt = true) {
                 var displayElement = $("#temperature-humidity-display");
                 var currentText = displayElement.html().split("<br>");
 
@@ -536,7 +530,7 @@
                 }
 
                 displayElement.html(currentTemperature + "<br>" + currentHumidity);
-                checkTemperature();
+                checkTemperature(sendmqtt);
             }
 
             // MQTT Status
@@ -686,7 +680,7 @@
                     const data = JSON.parse(event.data);
 
                     updateTemperatureHumidity(data.tempHum?.temperature ?? null, data.tempHum?.humidity ??
-                        null);
+                        null, false);
                     updateVolume(data.arusAir || 0);
                     updateTDS(data.tds || 0);
                     updateStatus(data.status_sensor, data.status_relay);

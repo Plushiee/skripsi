@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\TabelTempHumModel;
 use Illuminate\Console\Command;
 use PhpMqtt\Client\Facades\MQTT;
 use App\Models\TabelPompaModel;
@@ -13,41 +14,73 @@ class MqttPublishCommand extends Command
     protected $signature = 'mqtt:publish';
     protected $description = 'Mengirimkan status pompa via MQTT setiap 5 detik';
 
-    protected $oldId = 0;
+    protected $counter = 0;
 
     public function handle()
     {
-        try {
-            $mqtt = MQTT::connection('default');
+        while (true) {
+            try {
+                $mqtt = $this->connectToMqtt();
+                $this->counter++;
+                $this->publishDumpData($mqtt);
 
-            echo sprintf("MQTT Publisher Started...");
-
-            while (true) {
-                $statusPompa = TabelPompaModel::latest('created_at')->first();
-
-                if ($statusPompa) {
-                    if ($statusPompa->otomatis) {
-                        // Jika otomatis aktif, selalu kirim status terbaru
-                        $this->publishPumpStatus($mqtt, $statusPompa->status);
-                    } elseif ($statusPompa->id != $this->oldId) {
-                        // Jika otomatis tidak aktif, hanya kirim sekali jika ada perubahan
-                        $this->oldId = $statusPompa->id;
-                        $this->publishPumpStatus($mqtt, $statusPompa->status);
+                if ($this->counter == 5) {
+                    $pompa = TabelPompaModel::latest()->first();
+                    $suhu = TabelTempHumModel::latest()->first();
+                    if ($pompa) {
+                        if ($pompa->otomatis == 1) {
+                            if ($pompa->suhu > $suhu->suhu) {
+                                $this->publishPumpStatus($mqtt, 'nyala');
+                            } else {
+                                $this->publishPumpStatus($mqtt, 'mati');
+                            }
+                        } else {
+                            $this->publishPumpStatus($mqtt, $pompa->status);
+                        }
                     }
+
+                    $this->counter = 0;
                 }
 
-                sleep(1);
+                sleep(3);
+            } catch (MqttClientException $e) {
+                Log::error("MQTT error: " . $e->getMessage());
+                sleep(4); // Tunggu sebentar sebelum mencoba lagi
+            } catch (\Exception $e) {
+                Log::error("General error: " . $e->getMessage());
+                sleep(4); // Tunggu sebentar sebelum mencoba lagi
             }
-        } catch (MqttClientException $e) {
-            Log::error("MQTT error: " . $e->getMessage());
-            sleep(5);
-            $this->handle(); // Restart jika error
         }
+    }
+
+    protected function connectToMqtt()
+    {
+        $mqtt = MQTT::connection('default');
+        if (!$mqtt->isConnected()) {
+            $mqtt->connect(null, true, ['keep_alive' => 60]);
+        }
+        return $mqtt;
     }
 
     protected function publishPumpStatus($mqtt, $status)
     {
-        Log::info("Publishing Pump Status: $status");
-        $mqtt->publish('72210456/pump', $status, 0);
+        try {
+            // echo sprintf("Publishing Pump Status: %s\n", $status);
+            $mqtt->publish('72210456/pump', $status, 0);
+        } catch (MqttClientException $e) {
+            Log::error("Failed to publish message: " . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    protected function publishDumpData($mqtt)
+    {
+        try {
+            // echo sprintf("Publishing Pump Status: %s\n", $status);
+            $mqtt->publish('72210456/dump', 'dump', 0);
+        } catch (MqttClientException $e) {
+            Log::error("Failed to publish message: " . $e->getMessage());
+            throw $e;
+        }
     }
 }

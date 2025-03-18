@@ -108,9 +108,10 @@ class MqttSubscribeCommand extends Command
 
         // Kirim ke cache jika semua data telah diterima
         // if ($this->isAllDataCollected()) {
-            // echo sprintf('Data lengkap, menyimpan ke cache: ', $this->koleksiData);
-            cache()->put('sse-update-event', $this->koleksiData, now()->addSeconds(5));
-            // $this->resetkoleksiData();
+        // echo sprintf('Data lengkap, menyimpan ke cache: ', $this->koleksiData);
+
+        cache()->put('sse-update-event', $this->koleksiData, now()->addSeconds(5));
+        // $this->resetkoleksiData();
         // }
 
 

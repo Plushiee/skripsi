@@ -8,6 +8,7 @@
 .cache
 .env
 error.log
+error_publish.log
 .env.backup
 .env.production
 .phpactor.json

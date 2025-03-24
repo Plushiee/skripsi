@@ -28,9 +28,12 @@
                             <form id="filterForm">
                                 @csrf
                                 <div class="mb-3">
-                                    <label for="waktu" class="form-label">Waktu</label>
-                                    <input type="date" class="form-control" id="waktu" name="waktu" min="{{ now()->format('Y-m-d') }}"
-                                    max="{{ now()->addWeek()->format('Y-m-d') }}">
+                                    <label for="startTime" class="form-label">Waktu Mulai</label>
+                                    <input type="datetime-local" class="form-control" id="startTime" name="start_time">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="endTime" class="form-label">Waktu Selesai</label>
+                                    <input type="datetime-local" class="form-control" id="endTime" name="end_time">
                                 </div>
                                 <button type="button" class="btn btn-primary" id="resetButton">Reset</button>
                             </form>
@@ -122,7 +125,7 @@
 
     <script>
         $(document).ready(function() {
-            $('#waktu').on('change', function() {
+            $('#startTime, #endTime').on('change', function() {
                 autoFilterData();
             });
 
@@ -131,15 +134,18 @@
             });
 
             function autoFilterData() {
-                var waktu = $('#waktu').val();
+                var startTime = $('#startTime').val();
+                var endTime = $('#endTime').val();
 
-                if (waktu) {
+                if (startTime && endTime) {
+                    console.log('Filtering data from', startTime, 'to', endTime);
                     $.ajax({
                         type: "POST",
                         url: "{{ route('api.get.arusAir') }}",
                         data: {
                             _token: '{{ csrf_token() }}',
-                            waktu: waktu,
+                            start_time: startTime,
+                            end_time: endTime
                         },
                         dataType: "json",
                         success: function(response) {

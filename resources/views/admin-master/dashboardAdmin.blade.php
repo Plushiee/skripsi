@@ -62,7 +62,7 @@
                                     <h5 class="card-title mb-3">Status Mesin</h5>
                                     <div class="text-center my-4">
                                         <h4 id="status" class="text-center"><i class="fa fa-circle red-shadow mb-4"
-                                                aria-hidden="true" id="iot-status-icon"></i>OFFLINE</h4>
+                                                aria-hidden="true" id="iot-status-icon"></i><br>OFFLINE</h4>
                                     </div>
                                 </div>
                             </div>
@@ -478,9 +478,31 @@
                         otomatis: otomatis,
                         suhu: $('#temperature-input').val()
                     },
+                    beforeSend: function() {
+                        let loadingMessage = status === 'nyala' ? 'Menyalakan' : 'Mematikan';
+                        alert.fire({
+                            icon: 'info',
+                            title: loadingMessage + ' Pompa...',
+                            timer: 15000,
+                            showConfirmButton: false,
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            },
+                        });
+                    },
                     success: function(response) {
                         // Buka kembali event source setelah AJAX berhasil
                         window.eventSource = new EventSource("{{ route('api.get.sse') }}");
+                        let successMessage = status === 'nyala' ? 'Pompa Menyala!' : 'Pompa Mati!';
+
+                        // Tambahkan penundaan 15 detik sebelum menampilkan notifikasi sukses
+                        setTimeout(function() {
+                            alert.fire({
+                                icon: 'success',
+                                title: successMessage
+                            });
+                        }, 15000); // 15000 ms = 15 detik
                     },
                     error: function(response) {
                         alert.fire({

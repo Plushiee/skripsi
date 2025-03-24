@@ -1,5 +1,5 @@
 @extends('admin-master.templates.main-admin-utama')
-@section('title', 'Rumah Hijau Fakultas Biologi | TDS')
+@section('title', 'Rumah Hijau Fakultas Biologi | Reservoir Air')
 @section('css-extras')
     <!-- Core Bootstrap Table -->
     <link rel="stylesheet" href="{{ asset('main/css/bootstrap-table.css') }}">
@@ -9,8 +9,8 @@
 @section('content')
     <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="#">Home</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Tabel Arus Air</li>
+            <li class="breadcrumb-item"><a href="{{ route('umum.dashboard') }}">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Tabel Reservoir Air</li>
         </ol>
     </nav>
     <div class="row mb-1">
@@ -28,9 +28,12 @@
                             <form id="filterForm">
                                 @csrf
                                 <div class="mb-3">
-                                    <label for="waktu" class="form-label">Waktu</label>
-                                    <input type="date" class="form-control" id="waktu" name="waktu" min="{{ now()->format('Y-m-d') }}"
-                                    max="{{ now()->addWeek()->format('Y-m-d') }}">
+                                    <label for="startTime" class="form-label">Waktu Mulai</label>
+                                    <input type="datetime-local" class="form-control" id="startTime" name="start_time">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="endTime" class="form-label">Waktu Selesai</label>
+                                    <input type="datetime-local" class="form-control" id="endTime" name="end_time">
                                 </div>
                                 <button type="button" class="btn btn-primary" id="resetButton">Reset</button>
                             </form>
@@ -48,7 +51,7 @@
 
             <table id="table" data-show-export="true" data-pagination="true" data-page-list="[10, 25, 50, 100, 200, ALL]"
                 data-click-to-select="true" data-toolbar="#toolbar" data-search="true" data-show-toggle="true"
-                data-show-columns="true" data-ajax="APIGetArusAir">
+                data-show-columns="true" data-ajax="APIGetUdara">
             </table>
         </div>
     </div>
@@ -86,9 +89,9 @@
                             title: 'Id Area'
                         },
                         {
-                            field: 'debit',
-                            title: 'Debit Air'
-                        }
+                            field: 'ping',
+                            title: 'Sisa Air (%)'
+                        },
                     ],
                     data: [] // Ensure this is an empty array initially or loaded with initial data
                 });
@@ -100,10 +103,10 @@
             }).trigger('change');
         });
 
-        function APIGetArusAir(params) {
+        function APIGetUdara(params) {
             $.ajax({
                 type: "POST",
-                url: "{{ route('api.get.arusAir') }}",
+                url: "{{ route('api.get.ping') }}",
                 data: {
                     _token: '{{ csrf_token() }}'
                 },
@@ -122,7 +125,7 @@
 
     <script>
         $(document).ready(function() {
-            $('#waktu').on('change', function() {
+            $('#startTime, #endTime').on('change', function() {
                 autoFilterData();
             });
 
@@ -131,15 +134,18 @@
             });
 
             function autoFilterData() {
-                var waktu = $('#waktu').val();
+                var startTime = $('#startTime').val();
+                var endTime = $('#endTime').val();
 
-                if (waktu) {
+                if (startTime && endTime) {
+                    console.log('Filtering data from', startTime, 'to', endTime);
                     $.ajax({
                         type: "POST",
-                        url: "{{ route('api.get.arusAir') }}",
+                        url: "{{ route('api.get.ping') }}",
                         data: {
                             _token: '{{ csrf_token() }}',
-                            waktu: waktu,
+                            start_time: startTime,
+                            end_time: endTime
                         },
                         dataType: "json",
                         success: function(response) {
@@ -160,7 +166,7 @@
                 $('#filterForm')[0].reset();
                 $.ajax({
                     type: "POST",
-                    url: "{{ route('api.get.arusAir') }}",
+                    url: "{{ route('api.get.udara') }}",
                     data: {
                         _token: '{{ csrf_token() }}'
                     },

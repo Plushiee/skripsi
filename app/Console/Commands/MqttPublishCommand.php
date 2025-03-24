@@ -24,7 +24,7 @@ class MqttPublishCommand extends Command
                 $this->counter++;
                 $this->publishDumpData($mqtt);
 
-                if ($this->counter == 5) {
+                if ($this->counter > 5) {
                     $pompa = TabelPompaModel::latest()->first();
                     $suhu = TabelTempHumModel::latest()->first();
                     if ($pompa) {

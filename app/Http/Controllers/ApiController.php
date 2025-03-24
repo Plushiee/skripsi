@@ -14,6 +14,7 @@ use App\Models\TabelPompaModel;
 use App\Models\TabelTDSModel;
 use App\Models\TabelTempHumModel;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event as FacadesEvent;
 use Illuminate\Support\Facades\Log;
@@ -90,21 +91,175 @@ class ApiController extends Controller
     private function validDate($date)
     {
         $date = strtotime($date);
-        return date('Y-m-d H:i:s', $date);
+        return date('Y-m-d', $date);
     }
 
+    // public function getPH(Request $request)
+    // {
+    //     $query = TabelPHModel::query();
+
+    //     if ($request->has('start_time') && $request->has('end_time')) {
+    //         $startTime = $this->validDate($request->input('start_time'));
+    //         $endTime = $this->validDate($request->input('end_time'));
+    //         $query->whereBetween('created_at', [$startTime, $endTime]);
+
+    //         $ph = $query->get();
+    //     } else {
+    //         $ph = TabelPHModel::where('created_at', '>=', now()->subDays(3))->get();
+    //     }
+
+    //     $formattedData = [
+    //         'total' => $ph->count(),
+    //         'totalNotFiltered' => TabelPHModel::count(),
+    //         'rows' => $ph
+    //             ->map(function ($item) {
+    //                 return [
+    //                     'timestamp' => $item->created_at->format('Y-m-d H:i:s'),
+    //                     'id_area' => $item->id_area,
+    //                     'ph' => $item->ph,
+    //                 ];
+    //             })
+    //             ->toArray(),
+    //     ];
+
+    //     return response()->json($formattedData);
+    // }
+
+    // public function getTDS(Request $request)
+    // {
+    //     $query = TabelTDSModel::query();
+
+    //     if ($request->has('start_time') && $request->has('end_time')) {
+    //         $startTime = $this->validDate($request->input('start_time'));
+    //         $endTime = $this->validDate($request->input('end_time'));
+    //         $query->whereBetween('created_at', [$startTime, $endTime]);
+
+    //         $ph = $query->get();
+    //     } else {
+    //         $ph = TabelTDSModel::where('created_at', '>=', now()->subDays(3))->get();
+    //     }
+
+    //     $formattedData = [
+    //         'total' => $ph->count(),
+    //         'totalNotFiltered' => TabelTDSModel::count(),
+    //         'rows' => $ph
+    //             ->map(function ($item) {
+    //                 return [
+    //                     'timestamp' => $item->created_at->format('Y-m-d H:i:s'),
+    //                     'id_area' => $item->id_area,
+    //                     'ppm' => $item->ppm,
+    //                 ];
+    //             })
+    //             ->toArray(),
+    //     ];
+
+    //     return response()->json($formattedData);
+    // }
+
+    // public function getUdara(Request $request)
+    // {
+    //     $query = TabelTempHumModel::query();
+
+    //     if ($request->has('start_time') && $request->has('end_time')) {
+    //         $startTime = $this->validDate($request->input('start_time'));
+    //         $endTime = $this->validDate($request->input('end_time'));
+    //         $query->whereBetween('created_at', [$startTime, $endTime]);
+
+    //         $ph = $query->get();
+    //     } else {
+    //         $ph = TabelTempHumModel::where('created_at', '>=', now()->subDays(3))->get();
+    //     }
+
+    //     $formattedData = [
+    //         'total' => $ph->count(),
+    //         'totalNotFiltered' => TabelTempHumModel::count(),
+    //         'rows' => $ph
+    //             ->map(function ($item) {
+    //                 return [
+    //                     'timestamp' => $item->created_at->format('Y-m-d H:i:s'),
+    //                     'id_area' => $item->id_area,
+    //                     'temperature' => $item->temperature,
+    //                     'humidity' => $item->humidity,
+    //                 ];
+    //             })
+    //             ->toArray(),
+    //     ];
+
+    //     return response()->json($formattedData);
+    // }
+
+    // public function getPing(Request $request)
+    // {
+    //     $query = TabelPingModel::query();
+
+    //     if ($request->has('start_time') && $request->has('end_time')) {
+    //         $startTime = $this->validDate($request->input('start_time'));
+    //         $endTime = $this->validDate($request->input('end_time'));
+    //         $query->whereBetween('created_at', [$startTime, $endTime]);
+
+    //         $ph = $query->get();
+    //     } else {
+    //         $ph = TabelPingModel::where('created_at', '>=', now()->subDays(3))->get();
+    //     }
+
+    //     $formattedData = [
+    //         'total' => $ph->count(),
+    //         'totalNotFiltered' => TabelPingModel::count(),
+    //         'rows' => $ph
+    //             ->map(function ($item) {
+    //                 return [
+    //                     'timestamp' => $item->created_at->format('Y-m-d H:i:s'),
+    //                     'id_area' => $item->id_area,
+    //                     'ping' => $item->ping,
+    //                 ];
+    //             })
+    //             ->toArray(),
+    //     ];
+
+    //     return response()->json($formattedData);
+    // }
+
+    // public function getArusAir(Request $request)
+    // {
+    //     $query = TabelArusAirModel::query();
+
+    //     if ($request->has('start_time') && $request->has('end_time')) {
+    //         $startTime = $this->validDate($request->input('start_time'));
+    //         $endTime = $this->validDate($request->input('end_time'));
+    //         $query->whereBetween('created_at', [$startTime, $endTime]);
+
+    //         $ph = $query->get();
+    //     } else {
+    //         $ph = TabelArusAirModel::where('created_at', '>=', now()->subDays(3))->get();
+    //     }
+
+    //     $formattedData = [
+    //         'total' => $ph->count(),
+    //         'totalNotFiltered' => TabelArusAirModel::count(),
+    //         'rows' => $ph
+    //             ->map(function ($item) {
+    //                 return [
+    //                     'timestamp' => $item->created_at->format('Y-m-d H:i:s'),
+    //                     'id_area' => $item->id_area,
+    //                     'debit' => $item->debit,
+    //                 ];
+    //             })
+    //             ->toArray(),
+    //     ];
+
+    //     return response()->json($formattedData);
+    // }
     public function getPH(Request $request)
     {
         $query = TabelPHModel::query();
 
-        if ($request->has('start_time') && $request->has('end_time')) {
-            $startTime = $this->validDate($request->input('start_time'));
-            $endTime = $this->validDate($request->input('end_time'));
-            $query->whereBetween('created_at', [$startTime, $endTime]);
+        if ($request->has('waktu')) {
+            $waktu = $this->validDate($request->input('waktu'));
+            $query->whereDate('created_at', $waktu)->get();
 
             $ph = $query->get();
         } else {
-            $ph = TabelPHModel::all();
+            $ph = TabelPHModel::whereDate('created_at', Carbon::today()->toDateString())->get();
         }
 
         $formattedData = [
@@ -128,14 +283,13 @@ class ApiController extends Controller
     {
         $query = TabelTDSModel::query();
 
-        if ($request->has('start_time') && $request->has('end_time')) {
-            $startTime = $this->validDate($request->input('start_time'));
-            $endTime = $this->validDate($request->input('end_time'));
-            $query->whereBetween('created_at', [$startTime, $endTime]);
+        if ($request->has('waktu')) {
+            $waktu = $this->validDate($request->input('waktu'));
+            $query->whereDate('created_at', $waktu)->get();
 
             $ph = $query->get();
         } else {
-            $ph = TabelTDSModel::all();
+            $ph = TabelTDSModel::whereDate('created_at', Carbon::today()->toDateString())->get();
         }
 
         $formattedData = [
@@ -159,14 +313,13 @@ class ApiController extends Controller
     {
         $query = TabelTempHumModel::query();
 
-        if ($request->has('start_time') && $request->has('end_time')) {
-            $startTime = $this->validDate($request->input('start_time'));
-            $endTime = $this->validDate($request->input('end_time'));
-            $query->whereBetween('created_at', [$startTime, $endTime]);
+        if ($request->has('waktu')) {
+            $waktu = $this->validDate($request->input('waktu'));
+            $query->whereDate('created_at', $waktu)->get();
 
             $ph = $query->get();
         } else {
-            $ph = TabelTempHumModel::all();
+            $ph = TabelTempHumModel::whereDate('created_at', Carbon::today()->toDateString())->get();
         }
 
         $formattedData = [
@@ -191,14 +344,13 @@ class ApiController extends Controller
     {
         $query = TabelPingModel::query();
 
-        if ($request->has('start_time') && $request->has('end_time')) {
-            $startTime = $this->validDate($request->input('start_time'));
-            $endTime = $this->validDate($request->input('end_time'));
-            $query->whereBetween('created_at', [$startTime, $endTime]);
+        if ($request->has('waktu')) {
+            $waktu = $this->validDate($request->input('waktu'));
+            $query->whereDate('created_at', $waktu)->get();
 
             $ph = $query->get();
         } else {
-            $ph = TabelPingModel::all();
+            $ph = TabelPingModel::whereDate('created_at', Carbon::today()->toDateString())->get();
         }
 
         $formattedData = [
@@ -222,14 +374,13 @@ class ApiController extends Controller
     {
         $query = TabelArusAirModel::query();
 
-        if ($request->has('start_time') && $request->has('end_time')) {
-            $startTime = $this->validDate($request->input('start_time'));
-            $endTime = $this->validDate($request->input('end_time'));
-            $query->whereBetween('created_at', [$startTime, $endTime]);
+        if ($request->has('waktu')) {
+            $waktu = $this->validDate($request->input('waktu'));
+            $query->whereDate('created_at', $waktu)->get();
 
             $ph = $query->get();
         } else {
-            $ph = TabelArusAirModel::all();
+            $ph = TabelArusAirModel::whereDate('created_at', Carbon::today()->toDateString())->get();
         }
 
         $formattedData = [
@@ -561,8 +712,8 @@ class ApiController extends Controller
                             'humidity' => $cachedData['tempHum']['humidity'] ?? 0,
                         ],
                         'arusAir' => $cachedData['arusAir'] ?? 0,
-                        'status_sensor'=> $cachedData['status_sensor'] == "true" ? 1 : 0,
-                        'status_relay'=> $cachedData['status_relay'] == "true" ? 1 : 0,
+                        'status_sensor' => $cachedData['status_sensor'] == "true" ? 1 : 0,
+                        'status_relay' => $cachedData['status_relay'] == "true" ? 1 : 0,
                     ];
 
                     // Kirim data sebagai event SSE

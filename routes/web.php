@@ -35,6 +35,18 @@ Route::middleware(['auth', 'role:admin-master'])->prefix('/admin-master')->name(
     Route::get('/daftar-admin/view/{id}', [AdminMasterController::class, 'viewAdmin'])->name('akun.daftar-admin.view');
 });
 
+// Kelompok Rute untuk Umum
+Route::middleware(['redirectIfAuthenticated', 'guest'])->prefix('/')->name('umum.')->group(function () {
+    Route::get('/dashboard', [UmumController::class, 'dashboardUmum'])->name('dashboard');
+    Route::get('/rangkuman', [UmumController::class, 'rangkuman'])->name('rangkuman');
+    Route::get('/rangkuman/cetak', [UmumController::class, 'rangkumanCetak'])->name('rangkuman.cetak');
+    Route::get('/tabel-ph', [UmumController::class, 'tabelPH'])->name('tabel.PH');
+    Route::get('/tabel-tds', [UmumController::class, 'tabelTDS'])->name('tabel.TDS');
+    Route::get('/tabel-udara', [UmumController::class, 'tabelUdara'])->name('tabel.udara');
+    Route::get('/tabel-arus', [UmumController::class, 'tabelArus'])->name('tabel.arus');
+    Route::get('/tabel-reservoir', [UmumController::class, 'tabelReservoir'])->name('tabel.reservoir');
+});
+
 Route::get('/check-session', function () {
     return response()->json([
         'auth_user' => Auth::user(),
@@ -50,18 +62,6 @@ Route::middleware('auth')->prefix('/auth')->group(function () {
 // Rute untuk login
 Route::middleware('guest')->prefix('/auth')->group(function () {
     Route::post('/login', [AuthController::class, 'authLogin'])->name('login');
-});
-
-// Kelompok Rute untuk Umum
-Route::middleware('guest')->prefix('/')->name('umum.')->group(function () {
-    Route::get('/dashboard', [UmumController::class, 'dashboardUmum'])->name('dashboard');
-    Route::get('/rangkuman', [UmumController::class, 'rangkuman'])->name('rangkuman');
-    Route::get('/rangkuman/cetak', [UmumController::class, 'rangkumanCetak'])->name('rangkuman.cetak');
-    Route::get('/tabel-ph', [UmumController::class, 'tabelPH'])->name('tabel.PH');
-    Route::get('/tabel-tds', [UmumController::class, 'tabelTDS'])->name('tabel.TDS');
-    Route::get('/tabel-udara', [UmumController::class, 'tabelUdara'])->name('tabel.udara');
-    Route::get('/tabel-arus', [UmumController::class, 'tabelArus'])->name('tabel.arus');
-    Route::get('/tabel-reservoir', [UmumController::class, 'tabelReservoir'])->name('tabel.reservoir');
 });
 
 Route::fallback(function () {

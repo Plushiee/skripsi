@@ -20,12 +20,14 @@ class UmumController extends Controller
         // Default range jika tidak ada input
         if (!$s && !$e) {
             $e = Carbon::now()->toDateString();
-            $s = Carbon::parse($e)->subDays(32)->toDateString();
+            $s = Carbon::parse($e)->subDays(8)->toDateString();
         } elseif ($s && !$e) {
             $e = Carbon::now()->toDateString();
         } elseif (!$s && $e) {
-            $s = Carbon::parse($e)->subDays(32)->toDateString();
+            $s = Carbon::parse($e)->subDays(8)->toDateString();
         }
+
+        $e = Carbon::parse($e)->endOfDay();
 
         // Ambil data
         $rawDatta = [

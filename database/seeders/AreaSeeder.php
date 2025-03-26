@@ -15,9 +15,9 @@ class AreaSeeder extends Seeder
     {
         DB::table('area')->insert([
             [
-                'nama_area' => 'Kebun Rumah Hijau',
-                'lokasi' => 'Jl. Dr. Wahidin Sudirohusodo No.5-25, Kotabaru, Kec. Gondokusuman, Kota Yogyakarta, Daerah Istimewa Yogyakarta 55224',
-                'keterangan' => 'Belakang gedung Koinonia',
+                'nama_area' => 'Kebun Hidroponik',
+                'lokasi' => 'Jl. Titi Bumi Asri, Area Sawah, Banyuraden, Kec. Gamping, Kabupaten Sleman, Daerah Istimewa Yogyakarta 55293',
+                'keterangan' => 'Lantai 3',
             ],
         ]);
     }

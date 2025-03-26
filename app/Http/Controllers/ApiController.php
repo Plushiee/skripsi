@@ -6,6 +6,7 @@ use App\Models\TabelArusAirModel;
 use App\Models\TabelPingModel;
 use Illuminate\Http\RedirectResponse;
 use App\Events\SSEUpdateEvent;
+use App\Models\AreaModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use PhpMqtt\Client\Facades\MQTT;
@@ -88,10 +89,17 @@ class ApiController extends Controller
         return response()->json(['success' => 'Pesan MQTT berhasil dikirim!']);
     }
 
-    private function validDate($date)
+    private function validDate($date, $hour = null)
     {
-        $date = strtotime($date);
-        return date('Y-m-d', $date);
+        if ($hour) {
+            $dateTimestamp = strtotime($date);
+            $hourTimestamp = strtotime($hour);
+            $formattedHour = date('H:i:s', $hourTimestamp);
+            return date('Y-m-d', $dateTimestamp) . ' ' . $formattedHour;
+        } else {
+            $date = strtotime($date);
+            return date('Y-m-d' . ($hour ? ' H:i:s' : ''), $date);
+        }
     }
 
     // public function getPH(Request $request)
@@ -270,6 +278,7 @@ class ApiController extends Controller
                     return [
                         'timestamp' => $item->created_at->format('Y-m-d H:i:s'),
                         'id_area' => $item->id_area,
+                        'nama_wilayah' => AreaModel::where('id_area', $item->id_area)->first()->nama_area,
                         'ph' => $item->ph,
                     ];
                 })
@@ -300,6 +309,7 @@ class ApiController extends Controller
                     return [
                         'timestamp' => $item->created_at->format('Y-m-d H:i:s'),
                         'id_area' => $item->id_area,
+                        'nama_wilayah' => AreaModel::where('id_area', $item->id_area)->first()->nama_area,
                         'ppm' => $item->ppm,
                     ];
                 })
@@ -330,6 +340,7 @@ class ApiController extends Controller
                     return [
                         'timestamp' => $item->created_at->format('Y-m-d H:i:s'),
                         'id_area' => $item->id_area,
+                        'nama_wilayah' => AreaModel::where('id_area', $item->id_area)->first()->nama_area,
                         'temperature' => $item->temperature,
                         'humidity' => $item->humidity,
                     ];
@@ -361,6 +372,7 @@ class ApiController extends Controller
                     return [
                         'timestamp' => $item->created_at->format('Y-m-d H:i:s'),
                         'id_area' => $item->id_area,
+                        'nama_wilayah' => AreaModel::where('id_area', $item->id_area)->first()->nama_area,
                         'ping' => $item->ping,
                     ];
                 })
@@ -375,9 +387,14 @@ class ApiController extends Controller
         $query = TabelArusAirModel::query();
 
         if ($request->has('waktu')) {
-            $waktu = $this->validDate($request->input('waktu'));
-            $query->whereDate('created_at', $waktu)->get();
-
+            if ($request->startHour != null && $request->endHour != null) {
+                $s = $this->validDate($request->input('waktu'), $request->input('startHour'));
+                $e = $this->validDate($request->input('waktu'), $request->input('endHour'));
+                $query->whereBetween('created_at', [$s, $e])->get();
+            } else {
+                $waktu = $this->validDate($request->input('waktu'));
+                $query->whereDate('created_at', $waktu)->get();
+            }
             $ph = $query->get();
         } else {
             $ph = TabelArusAirModel::whereDate('created_at', Carbon::today()->toDateString())->get();
@@ -391,6 +408,7 @@ class ApiController extends Controller
                     return [
                         'timestamp' => $item->created_at->format('Y-m-d H:i:s'),
                         'id_area' => $item->id_area,
+                        'nama_wilayah' => AreaModel::where('id_area', $item->id_area)->first()->nama_area,
                         'debit' => $item->debit,
                     ];
                 })

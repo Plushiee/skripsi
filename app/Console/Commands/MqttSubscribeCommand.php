@@ -36,6 +36,9 @@ class MqttSubscribeCommand extends Command
         'status_relay' => null,
     ];
 
+    protected $temperatureData = [];
+    protected $humidityData = [];
+
     public function __construct()
     {
         parent::__construct();
@@ -156,13 +159,27 @@ class MqttSubscribeCommand extends Command
     {
         switch ($topic) {
             case '72210456/waterflow':
-                TabelArusAirModel::create(['id_area' => 1, 'debit' => $message]);
+                $lastWaterFlow = TabelArusAirModel::where('id_area', 1)->orderBy('created_at', 'desc')->first();
+
+                if ($lastWaterFlow === null || $lastWaterFlow->debit != $message) {
+                    TabelArusAirModel::create(['id_area' => 1, 'debit' => $message]);
+                }
                 break;
+
             case '72210456/TDS':
-                TabelTDSModel::create(['id_area' => 1, 'ppm' => $message]);
+                $lastTDS = TabelTDSModel::where('id_area', 1)->orderBy('created_at', 'desc')->first();
+
+                if ($lastTDS === null || $lastTDS->ppm != $message) {
+                    TabelTDSModel::create(['id_area' => 1, 'ppm' => $message]);
+                }
                 break;
+
             case '72210456/PH':
-                TabelPHModel::create(['id_area' => 1, 'ph' => $message]);
+                $lastPH = TabelPHModel::where('id_area', 1)->orderBy('created_at', 'desc')->first();
+
+                if ($lastPH === null || $lastPH->ph != $message) {
+                    TabelPHModel::create(['id_area' => 1, 'ph' => $message]);
+                }
                 break;
             case '72210456/humidityDHT':
                 $this->tempHumData['humidity'] = $message;
@@ -189,22 +206,39 @@ class MqttSubscribeCommand extends Command
     // fungsi menyimpan data suhu dan kelembaban dalam satu Tabel
     protected function storeTempHumData()
     {
-        $lastRecord = TabelTempHumModel::latest('created_at')->first();
-        if ($this->tempHumData['temperature'] !== null && $this->tempHumData['humidity'] !== null) {
+        // Menyimpan data suhu dan kelembapan ke dalam array
+        if ($this->tempHumData['temperature'] !== null) {
+            $this->temperatureData[] = $this->tempHumData['temperature'];
+        }
+        if ($this->tempHumData['humidity'] !== null) {
+            $this->humidityData[] = $this->tempHumData['humidity'];
+        }
+
+        // Cek apakah kita sudah memiliki 10 data
+        if (count($this->temperatureData) >= 10 && count($this->humidityData) >= 10) {
+            // Hitung rata-rata
+            $averageTemperature = array_sum($this->temperatureData) / count($this->temperatureData);
+            $averageHumidity = array_sum($this->humidityData) / count($this->humidityData);
+
+            $lastRecord = TabelTempHumModel::latest('created_at')->first();
             $isDifferent = !$lastRecord ||
-                $lastRecord->temperature != $this->tempHumData['temperature'] ||
-                $lastRecord->humidity != $this->tempHumData['humidity'];
+                $lastRecord->temperature != $averageTemperature ||
+                $lastRecord->humidity != $averageHumidity;
 
             if ($isDifferent) {
                 TabelTempHumModel::create([
                     'id_area' => 1,
-                    'temperature' => $this->tempHumData['temperature'],
-                    'humidity' => $this->tempHumData['humidity']
+                    'temperature' => $averageTemperature,
+                    'humidity' => $averageHumidity
                 ]);
 
-                // Reset data after saving
-                $this->tempHumData['temperature'] = null;
-                $this->tempHumData['humidity'] = null;
+                // Reset data setelah menyimpan
+                $this->temperatureData = [];
+                $this->humidityData = [];
+            } else {
+                // Reset data jika tidak ada perubahan
+                $this->temperatureData = [];
+                $this->humidityData = [];
             }
         }
     }

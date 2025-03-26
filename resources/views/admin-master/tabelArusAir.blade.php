@@ -29,8 +29,18 @@
                                 @csrf
                                 <div class="mb-3">
                                     <label for="waktu" class="form-label">Waktu</label>
-                                    <input type="date" class="form-control" id="waktu" name="waktu" min="{{ now()->format('Y-m-d') }}"
-                                    max="{{ now()->addWeek()->format('Y-m-d') }}">
+                                    <input type="date" class="form-control" id="waktu" name="waktu"
+                                        min="{{ now()->subWeek()->format('Y-m-d') }}" max="{{ now()->format('Y-m-d') }}">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="startHour" class="form-label">Jam Mulai</label>
+                                    <input type="time" class="form-control" id="startHour" name="startHour"
+                                        onchange="validateEndHour()" disabled>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="endHour" class="form-label">Jam Selesai</label>
+                                    <input type="time" class="form-control" id="endHour" name="endHour"
+                                        onchange="validateEndHour()" disabled>
                                 </div>
                                 <button type="button" class="btn btn-primary" id="resetButton">Reset</button>
                             </form>
@@ -46,9 +56,9 @@
                 </select>
             </div>
 
-            <table id="table" data-show-export="true" data-pagination="true" data-page-list="[10, 25, 50, 100, 200, ALL]"
-                data-click-to-select="true" data-toolbar="#toolbar" data-search="true" data-show-toggle="true"
-                data-show-columns="true" data-ajax="APIGetArusAir">
+            <table id="table" data-show-export="true" data-pagination="true"
+                data-page-list="[10, 25, 50, 100, 200, ALL]" data-click-to-select="true" data-toolbar="#toolbar"
+                data-search="true" data-show-toggle="true" data-show-columns="true" data-ajax="APIGetArusAir">
             </table>
         </div>
     </div>
@@ -67,6 +77,39 @@
     <!-- /Core Bootstrap Table -->
     <script>
         var $table = $('#table');
+        $('#waktu').change(function(e) {
+            e.preventDefault();
+
+            if ($('#waktu').val()) {
+                $('#startHour').prop('disabled', false);
+                $('#endHour').prop('disabled', false);
+            } else {
+                $('#startHour').prop('disabled', true);
+                $('#endHour').prop('disabled', true);
+                $('#startHour').val('');
+                $('#endHour').val('');
+            }
+        });
+
+        function validateEndHour() {
+            const startHour = document.getElementById('startHour').value;
+            const endHourInput = document.getElementById('endHour');
+
+            if (startHour) {
+                endHourInput.min = startHour;
+                if (endHourInput.value < startHour && endHourInput.value != '') {
+                    endHourInput.value = '';
+                    alert.fire({
+                        icon: 'error',
+                        title: 'Jam Mulai Tidak Boleh Melebihi Jam Selesai',
+                    });
+                }
+            } else {
+                // Jika startHour kosong, reset min endHour
+                endHourInput.min = "00:01";
+            }
+        }
+
         $(function() {
             $('#toolbar').find('select').change(function() {
                 $table.bootstrapTable('destroy').bootstrapTable({
@@ -82,8 +125,8 @@
                             title: 'Timestamp'
                         },
                         {
-                            field: 'id_area',
-                            title: 'Id Area'
+                            field: 'nama_wilayah',
+                            title: 'Nama Wilayah'
                         },
                         {
                             field: 'debit',
@@ -122,7 +165,7 @@
 
     <script>
         $(document).ready(function() {
-            $('#waktu').on('change', function() {
+            $('#waktu, #startHour, #endHour').on('change', function() {
                 autoFilterData();
             });
 
@@ -132,6 +175,8 @@
 
             function autoFilterData() {
                 var waktu = $('#waktu').val();
+                var startHour = $('#startHour').val();
+                var endHour = $('#endHour').val();
 
                 if (waktu) {
                     $.ajax({
@@ -140,6 +185,8 @@
                         data: {
                             _token: '{{ csrf_token() }}',
                             waktu: waktu,
+                            startHour: startHour,
+                            endHour: endHour
                         },
                         dataType: "json",
                         success: function(response) {

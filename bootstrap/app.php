@@ -13,12 +13,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->redirectGuestsTo(fn () => route('umum.dashboard'));
+        $middleware->redirectGuestsTo(fn() => route('umum.dashboard'));
         $middleware->use([
             \Illuminate\Session\Middleware\StartSession::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
         ]);
-        $middleware->alias(['role' => \App\Http\Middleware\RoleMiddleware::class]);
+        $middleware->alias([
+            'role' => \App\Http\Middleware\RoleMiddleware::class,
+            'redirectIfAuthenticated' => \App\Http\Middleware\RedirectIfAuthenticated::class
+        ]);
     })
-    ->withExceptions(function (Exceptions $exceptions) {
-    })->create();
+    ->withExceptions(function (Exceptions $exceptions) {})->create();

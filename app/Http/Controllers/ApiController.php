@@ -350,8 +350,6 @@ class ApiController extends Controller
             $hasil = TabelTempHumModel::whereDate('created_at', Carbon::today()->toDateString())->get();
         }
 
-        dd($hasil);
-
         $formattedData = [
             'total' => $hasil->count(),
             'totalNotFiltered' => TabelTempHumModel::count(),
@@ -389,7 +387,6 @@ class ApiController extends Controller
             $hasil = TabelPingModel::whereDate('created_at', Carbon::today()->toDateString())->get();
         }
 
-        dd($hasil);
         $formattedData = [
             'total' => $hasil->count(),
             'totalNotFiltered' => TabelPingModel::count(),
@@ -744,7 +741,6 @@ class ApiController extends Controller
                 while (!connection_aborted()) {
                     // Ambil data dari cache atau gunakan default jika tidak ada
                     $cachedData = cache('sse-update-event', []);
-                    // dd($cachedData);
 
                     // Validasi format data dan gunakan default jika tidak sesuai
                     $formattedData = [

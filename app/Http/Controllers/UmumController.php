@@ -17,7 +17,6 @@ class UmumController extends Controller
     // Get Rangkuman Data
     private function getRangkumanData($s = null, $e = null)
     {
-        // Default range jika tidak ada input
         if (!$s && !$e) {
             $e = Carbon::now()->toDateString();
             $s = Carbon::parse($e)->subDays(8)->toDateString();

@@ -262,8 +262,14 @@ class ApiController extends Controller
         $query = TabelPHModel::query();
 
         if ($request->has('waktu')) {
-            $waktu = $this->validDate($request->input('waktu'));
-            $query->whereDate('created_at', $waktu)->get();
+            if ($request->startHour != null && $request->endHour != null) {
+                $s = $this->validDate($request->input('waktu'), $request->input('startHour'));
+                $e = $this->validDate($request->input('waktu'), $request->input('endHour'));
+                $query->whereBetween('created_at', [$s, $e])->get();
+            } else {
+                $waktu = $this->validDate($request->input('waktu'));
+                $query->whereDate('created_at', $waktu)->get();
+            }
 
             $ph = $query->get();
         } else {
@@ -293,18 +299,24 @@ class ApiController extends Controller
         $query = TabelTDSModel::query();
 
         if ($request->has('waktu')) {
-            $waktu = $this->validDate($request->input('waktu'));
-            $query->whereDate('created_at', $waktu)->get();
+            if ($request->startHour != null && $request->endHour != null) {
+                $s = $this->validDate($request->input('waktu'), $request->input('startHour'));
+                $e = $this->validDate($request->input('waktu'), $request->input('endHour'));
+                $query->whereBetween('created_at', [$s, $e])->get();
+            } else {
+                $waktu = $this->validDate($request->input('waktu'));
+                $query->whereDate('created_at', $waktu)->get();
+            }
 
-            $ph = $query->get();
+            $hasil = $query->get();
         } else {
-            $ph = TabelTDSModel::whereDate('created_at', Carbon::today()->toDateString())->get();
+            $hasil = TabelTDSModel::whereDate('created_at', Carbon::today()->toDateString())->get();
         }
 
         $formattedData = [
-            'total' => $ph->count(),
+            'total' => $hasil->count(),
             'totalNotFiltered' => TabelTDSModel::count(),
-            'rows' => $ph
+            'rows' => $hasil
                 ->map(function ($item) {
                     return [
                         'timestamp' => $item->created_at->format('Y-m-d H:i:s'),
@@ -324,18 +336,26 @@ class ApiController extends Controller
         $query = TabelTempHumModel::query();
 
         if ($request->has('waktu')) {
-            $waktu = $this->validDate($request->input('waktu'));
-            $query->whereDate('created_at', $waktu)->get();
+            if ($request->startHour != null && $request->endHour != null) {
+                $s = $this->validDate($request->input('waktu'), $request->input('startHour'));
+                $e = $this->validDate($request->input('waktu'), $request->input('endHour'));
+                $query->whereBetween('created_at', [$s, $e])->get();
+            } else {
+                $waktu = $this->validDate($request->input('waktu'));
+                $query->whereDate('created_at', $waktu)->get();
+            }
 
-            $ph = $query->get();
+            $hasil = $query->get();
         } else {
-            $ph = TabelTempHumModel::whereDate('created_at', Carbon::today()->toDateString())->get();
+            $hasil = TabelTempHumModel::whereDate('created_at', Carbon::today()->toDateString())->get();
         }
 
+        dd($hasil);
+
         $formattedData = [
-            'total' => $ph->count(),
+            'total' => $hasil->count(),
             'totalNotFiltered' => TabelTempHumModel::count(),
-            'rows' => $ph
+            'rows' => $hasil
                 ->map(function ($item) {
                     return [
                         'timestamp' => $item->created_at->format('Y-m-d H:i:s'),
@@ -356,18 +376,24 @@ class ApiController extends Controller
         $query = TabelPingModel::query();
 
         if ($request->has('waktu')) {
-            $waktu = $this->validDate($request->input('waktu'));
-            $query->whereDate('created_at', $waktu)->get();
-
-            $ph = $query->get();
+            if ($request->startHour != null && $request->endHour != null) {
+                $s = $this->validDate($request->input('waktu'), $request->input('startHour'));
+                $e = $this->validDate($request->input('waktu'), $request->input('endHour'));
+                $query->whereBetween('created_at', [$s, $e])->get();
+            } else {
+                $waktu = $this->validDate($request->input('waktu'));
+                $query->whereDate('created_at', $waktu)->get();
+            }
+            $hasil = $query->get();
         } else {
-            $ph = TabelPingModel::whereDate('created_at', Carbon::today()->toDateString())->get();
+            $hasil = TabelPingModel::whereDate('created_at', Carbon::today()->toDateString())->get();
         }
 
+        dd($hasil);
         $formattedData = [
-            'total' => $ph->count(),
+            'total' => $hasil->count(),
             'totalNotFiltered' => TabelPingModel::count(),
-            'rows' => $ph
+            'rows' => $hasil
                 ->map(function ($item) {
                     return [
                         'timestamp' => $item->created_at->format('Y-m-d H:i:s'),

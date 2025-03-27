@@ -9,7 +9,7 @@
 @section('content')
     <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="#">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('admin-master.dashboard') }}">Home</a></li>
             <li class="breadcrumb-item active" aria-current="page">Tabel Udara</li>
         </ol>
     </nav>
@@ -28,12 +28,19 @@
                             <form id="filterForm">
                                 @csrf
                                 <div class="mb-3">
-                                    <label for="startTime" class="form-label">Waktu Mulai</label>
-                                    <input type="datetime-local" class="form-control" id="startTime" name="start_time">
+                                    <label for="waktu" class="form-label">Waktu</label>
+                                    <input type="date" class="form-control" id="waktu" name="waktu"
+                                        min="{{ now()->subWeek()->format('Y-m-d') }}" max="{{ now()->format('Y-m-d') }}">
                                 </div>
                                 <div class="mb-3">
-                                    <label for="endTime" class="form-label">Waktu Selesai</label>
-                                    <input type="datetime-local" class="form-control" id="endTime" name="end_time">
+                                    <label for="startHour" class="form-label">Jam Mulai</label>
+                                    <input type="time" class="form-control" id="startHour" name="startHour"
+                                        onchange="validateEndHour()" disabled>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="endHour" class="form-label">Jam Selesai</label>
+                                    <input type="time" class="form-control" id="endHour" name="endHour"
+                                        onchange="validateEndHour()" disabled>
                                 </div>
                                 <button type="button" class="btn btn-primary" id="resetButton">Reset</button>
                             </form>
@@ -49,9 +56,9 @@
                 </select>
             </div>
 
-            <table id="table" data-show-export="true" data-pagination="true" data-page-list="[10, 25, 50, 100, 200, ALL]"
-                data-click-to-select="true" data-toolbar="#toolbar" data-search="true" data-show-toggle="true"
-                data-show-columns="true" data-ajax="APIGetUdara">
+            <table id="table" data-show-export="true" data-pagination="true"
+                data-page-list="[10, 25, 50, 100, 200, ALL]" data-click-to-select="true" data-toolbar="#toolbar"
+                data-search="true" data-show-toggle="true" data-show-columns="true" data-ajax="APIGetUdara">
             </table>
         </div>
     </div>
@@ -70,6 +77,39 @@
     <!-- /Core Bootstrap Table -->
     <script>
         var $table = $('#table');
+        $('#waktu').change(function(e) {
+            e.preventDefault();
+
+            if ($('#waktu').val()) {
+                $('#startHour').prop('disabled', false);
+                $('#endHour').prop('disabled', false);
+            } else {
+                $('#startHour').prop('disabled', true);
+                $('#endHour').prop('disabled', true);
+                $('#startHour').val('');
+                $('#endHour').val('');
+            }
+        });
+
+        function validateEndHour() {
+            const startHour = document.getElementById('startHour').value;
+            const endHourInput = document.getElementById('endHour');
+
+            if (startHour) {
+                endHourInput.min = startHour;
+                if (endHourInput.value < startHour && endHourInput.value != '') {
+                    endHourInput.value = '';
+                    alert.fire({
+                        icon: 'error',
+                        title: 'Jam Mulai Tidak Boleh Melebihi Jam Selesai',
+                    });
+                }
+            } else {
+                // Jika startHour kosong, reset min endHour
+                endHourInput.min = "00:01";
+            }
+        }
+
         $(function() {
             $('#toolbar').find('select').change(function() {
                 $table.bootstrapTable('destroy').bootstrapTable({
@@ -138,8 +178,9 @@
             });
 
             function autoFilterData() {
-                var startTime = $('#startTime').val();
-                var endTime = $('#endTime').val();
+                var waktu = $('#waktu').val();
+                var startHour = $('#startHour').val();
+                var endHour = $('#endHour').val();
 
                 if (startTime && endTime) {
                     console.log('Filtering data from', startTime, 'to', endTime);
@@ -148,8 +189,9 @@
                         url: "{{ route('api.get.udara') }}",
                         data: {
                             _token: '{{ csrf_token() }}',
-                            start_time: startTime,
-                            end_time: endTime
+                            waktu: waktu,
+                            startHour: startHour,
+                            endHour: endHour
                         },
                         dataType: "json",
                         success: function(response) {
@@ -168,6 +210,10 @@
 
             function resetFilter() {
                 $('#filterForm')[0].reset();
+                $('#startHour').prop('disabled', true);
+                $('#endHour').prop('disabled', true);
+                $('#startHour').val('');
+                $('#endHour').val('');
                 $.ajax({
                     type: "POST",
                     url: "{{ route('api.get.udara') }}",

@@ -38,6 +38,11 @@ class MqttSubscribeCommand extends Command
 
     protected $temperatureData = [];
     protected $humidityData = [];
+    protected $waterFlowData = [];
+    protected $tdsData = [];
+    protected $phData = [];
+    protected $pingData = [];
+
 
     public function __construct()
     {
@@ -159,26 +164,81 @@ class MqttSubscribeCommand extends Command
     {
         switch ($topic) {
             case '72210456/waterflow':
-                $lastWaterFlow = TabelArusAirModel::where('id_area', 1)->orderBy('created_at', 'desc')->first();
+                if ($message != null) {
+                    $this->waterFlowData[] = $message;
+                }
 
-                if ($lastWaterFlow === null || $lastWaterFlow->debit != $message) {
-                    TabelArusAirModel::create(['id_area' => 1, 'debit' => $message]);
+                if (count($this->waterFlowData) >= 300) {
+                    $averageWaterFlow = array_sum($this->waterFlowData) / count($this->waterFlowData);
+
+                    $lastRecord = TabelArusAirModel::latest('created_at')->first();
+                    $isDifferent = !$lastRecord || $lastRecord->debit != $averageWaterFlow;
+
+                    if ($isDifferent) {
+                        TabelArusAirModel::create(['id_area' => 1, 'debit' => $averageWaterFlow]);
+                        $this->waterFlowData = [];
+                    } else {
+                        $this->waterFlowData = [];
+                    }
                 }
                 break;
 
             case '72210456/TDS':
-                $lastTDS = TabelTDSModel::where('id_area', 1)->orderBy('created_at', 'desc')->first();
+                if ($message != null) {
+                    $this->tdsData[] = $message;
+                }
 
-                if ($lastTDS === null || $lastTDS->ppm != $message) {
-                    TabelTDSModel::create(['id_area' => 1, 'ppm' => $message]);
+                if (count($this->tdsData) >= 300) {
+                    $averageTDS = array_sum($this->tdsData) / count($this->tdsData);
+
+                    $lastRecord = TabelTDSModel::latest('created_at')->first();
+                    $isDifferent = !$lastRecord || $lastRecord->tds != $averageTDS;
+
+                    if ($isDifferent) {
+                        TabelTDSModel::create(['id_area' => 1, 'tds' => $averageTDS]);
+                        $this->tdsData = [];
+                    } else {
+                        $this->tdsData = [];
+                    }
                 }
                 break;
 
             case '72210456/PH':
-                $lastPH = TabelPHModel::where('id_area', 1)->orderBy('created_at', 'desc')->first();
+                if ($message != null) {
+                    $this->phData[] = $message;
+                }
 
-                if ($lastPH === null || $lastPH->ph != $message) {
-                    TabelPHModel::create(['id_area' => 1, 'ph' => $message]);
+                if (count($this->phData) >= 300) {
+                    $averagePH = array_sum($this->phData) / count($this->phData);
+
+                    $lastRecord = TabelPHModel::latest('created_at')->first();
+                    $isDifferent = !$lastRecord || $lastRecord->ph != $averagePH;
+
+                    if ($isDifferent) {
+                        TabelPHModel::create(['id_area' => 1, 'ph' => $averagePH]);
+                        $this->phData = [];
+                    } else {
+                        $this->phData = [];
+                    }
+                }
+                break;
+            case '72210456/ping':
+                if ($message != null) {
+                    $this->pingData[] = $message;
+                }
+
+                if(count($this->pingData) >= 300) {
+                    $averagePing = array_sum($this->pingData) / count($this->pingData);
+
+                    $lastRecord = TabelPingModel::latest('created_at')->first();
+                    $isDifferent = !$lastRecord || $lastRecord->ping != $averagePing;
+
+                    if ($isDifferent) {
+                        TabelPingModel::create(['id_area' => 1, 'ping' => $averagePing]);
+                        $this->pingData = [];
+                    } else {
+                        $this->pingData = [];
+                    }
                 }
                 break;
             case '72210456/humidityDHT':
@@ -188,9 +248,6 @@ class MqttSubscribeCommand extends Command
             case '72210456/temp_luar':
                 $this->tempHumData['temperature'] = $message;
                 $this->storeTempHumData();
-                break;
-            case '72210456/ping':
-                TabelPingModel::create(['id_area' => 1, 'ping' => $message]);
                 break;
             case '72210456/esp8266_sensor':
                 $this->koleksiData['status_sensor'] = $message;
@@ -215,7 +272,7 @@ class MqttSubscribeCommand extends Command
         }
 
         // Cek apakah kita sudah memiliki 10 data
-        if (count($this->temperatureData) >= 10 && count($this->humidityData) >= 10) {
+        if (count($this->temperatureData) >= 10 && count($this->humidityData) >= 300) {
             // Hitung rata-rata
             $averageTemperature = array_sum($this->temperatureData) / count($this->temperatureData);
             $averageHumidity = array_sum($this->humidityData) / count($this->humidityData);
@@ -232,11 +289,9 @@ class MqttSubscribeCommand extends Command
                     'humidity' => $averageHumidity
                 ]);
 
-                // Reset data setelah menyimpan
                 $this->temperatureData = [];
                 $this->humidityData = [];
             } else {
-                // Reset data jika tidak ada perubahan
                 $this->temperatureData = [];
                 $this->humidityData = [];
             }

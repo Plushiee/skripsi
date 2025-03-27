@@ -73,6 +73,7 @@ class MqttSubscribeCommand extends Command
                     '72210456/PH',
                     '72210456/temp_luar',
                     '72210456/temp_dalam',
+                    '72210456/pump',
                 ];
 
                 // Subscribe to each topic
@@ -256,6 +257,8 @@ class MqttSubscribeCommand extends Command
             case '72210456/esp8266_relay':
                 $this->koleksiData['status_relay'] = $message;
                 // Log::info('status_sensor: ' . $message);
+                break;
+            case '72210456/pump':
                 break;
         }
     }

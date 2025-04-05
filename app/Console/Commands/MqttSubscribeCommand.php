@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\TabelPompaModel;
 use Illuminate\Console\Command;
 use PhpMqtt\Client\Facades\MQTT;
 use App\Events\MqttSubscribeEvent;
@@ -228,7 +229,7 @@ class MqttSubscribeCommand extends Command
                     $this->pingData[] = $message;
                 }
 
-                if(count($this->pingData) >= 300) {
+                if (count($this->pingData) >= 300) {
                     $averagePing = array_sum($this->pingData) / count($this->pingData);
 
                     $lastRecord = TabelPingModel::latest('created_at')->first();
@@ -257,6 +258,13 @@ class MqttSubscribeCommand extends Command
             case '72210456/esp8266_relay':
                 $this->koleksiData['status_relay'] = $message;
                 // Log::info('status_sensor: ' . $message);
+                break;
+            case '72210456/pump_relay':
+                $lastRecord = TabelPompaModel::latest('created_at')->first();
+                $isDifferent = !$lastRecord || $lastRecord->status != $message;
+                if ($isDifferent && $lastRecord->otomatis == 1) {
+                    TabelPompaModel::create(['id_area' => 1, 'status' => $message, 'otomatis' => 0]);
+                }
                 break;
             case '72210456/pump':
                 break;

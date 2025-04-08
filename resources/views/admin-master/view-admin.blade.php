@@ -5,6 +5,23 @@
     <link href="https://unpkg.com/filepond/dist/filepond.css" rel="stylesheet">
     <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css" rel="stylesheet">
     <link href="https://unpkg.com/filepond-plugin-file-poster/dist/filepond-plugin-file-poster.css" rel="stylesheet" />
+    <style>
+        #password-strength .progress {
+            height: 5px;
+        }
+
+        .progress-bar.weak {
+            background-color: red;
+        }
+
+        .progress-bar.medium {
+            background-color: orange;
+        }
+
+        .progress-bar.strong {
+            background-color: green;
+        }
+    </style>
 @endsection
 @section('content')
     <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
@@ -292,6 +309,17 @@
                             <input type="tel" class="form-control" id="input_${fieldId}" value="${currentValue}" />
                         </div>
                     `);
+                } else if (fieldId === 'password') {
+                    input = $(
+                        `<input type="${inputType}" class="form-control" id="input_${fieldId}" placeholder="${placeholder[fieldId]}" />
+                        <div id="password-strength" class="mt-2">
+                                <div class="progress">
+                                    <div id="strength-bar" class="progress-bar" role="progressbar" style="width: 0%;"></div>
+                                </div>
+                                <small id="strength-text" class="text-muted"></small>
+                            </div>
+                        `
+                    );
                 } else {
                     input = $(
                             `<input type="${inputType}" class="form-control" id="input_${fieldId}" />`)
@@ -303,7 +331,8 @@
                 let confirmInput = null;
                 if (fieldId === 'password') {
                     confirmInput = $(
-                        `<input type="password" class="form-control mt-2" id="confirm_${fieldId}" placeholder="Confirm Password" />`
+                        `<input type="password" class="form-control mt-2" id="confirm_${fieldId}" placeholder="Ulangi Password" />
+                         <small id="password-match" class="text-muted"></small>`
                     );
                     $label.append(confirmInput);
                 }
@@ -325,6 +354,14 @@
                             });
                             return;
                         }
+
+                        if (newValue === '') {
+                            alert.fire({
+                                icon: 'error',
+                                title: 'Password tidak boleh kosong!',
+                            });
+                            return;
+                        }
                     }
 
                     updateField(
@@ -341,6 +378,10 @@
                                 $('#whatsapp').attr('href', `https://wa.me/${newValue}`);
                             }
 
+                            if (fieldId === 'password') {
+                                newValue = '********';
+                            }
+
                             $label.text(newValue);
                             $anchor.text('edit').css('color', '');
                             $anchor.removeData('editing').removeData('originalValue');
@@ -348,12 +389,68 @@
                         function(xhr) {
                             alert.fire({
                                 icon: 'error',
-                                title:  xhr.responseJSON?.message || xhr.responseJSON?.messages ||
+                                title: xhr.responseJSON?.message || xhr.responseJSON
+                                    ?.messages ||
                                     'Error tidak diketahui.',
                             });
                         }
                     )
                 });
+            });
+
+            $(document).on('input', '#input_password', function() {
+                const password = $(this).val();
+                const $strengthBar = $('#strength-bar');
+                const $strengthText = $('#strength-text');
+                const $passwordStrength = $('#password-strength');
+
+                if (password === '') {
+                    $strengthBar.css('width', '0%').attr('class',
+                        'progress-bar');
+                    $strengthText.text('');
+                    $strengthText.hide();
+                    return;
+                }
+
+                $strengthText.show();
+
+                let strength = 0;
+                if (password.length >= 8) strength++;
+                if (/[a-z]/.test(password)) strength++;
+                if (/[A-Z]/.test(password)) strength++;
+                if (/[0-9]/.test(password)) strength++;
+                if (/[^a-zA-Z0-9]/.test(password)) strength++;
+
+                const strengthLevels = ['Lemah', 'Sedang', 'Kuat'];
+                const colors = ['weak', 'medium', 'strong'];
+                const widthPercent = [25, 50, 100];
+
+                const index = Math.min(strength - 1, strengthLevels.length -
+                    1);
+                $strengthBar.css('width', widthPercent[index] + '%')
+                    .attr('class', `progress-bar ${colors[index]}`);
+                $strengthText.text(
+                    `Kekuatan Password : ${strengthLevels[index]}`);
+            });
+
+            $(document).on('input', '#confirm_password', function() {
+                const password = $('#input_password')
+                    .val();
+                const ulangiPassword = $(this)
+                    .val();
+
+                if (ulangiPassword === '') {
+                    $('#password-match').text('').removeClass(
+                        'text-success text-danger');
+                    $('#password-match').find('br').remove();
+                } else if (password === ulangiPassword) {
+                    $('#password-match').text('Password sama!').addClass(
+                        'text-success').append('<br>').removeClass('text-danger');
+                } else {
+                    $('#password-match').text('Password tidak sama!')
+                        .addClass('text-danger').append('<br>').removeClass(
+                            'text-success');
+                }
             });
         });
     </script>

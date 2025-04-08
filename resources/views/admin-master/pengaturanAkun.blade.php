@@ -334,7 +334,7 @@
                 } else {
                     input = $(
                         `<input type="${inputType}" class="form-control" id="input_${fieldId}" placeholder="${placeholder[fieldId]}" />`
-                    );
+                    ).val(currentValue);
                 }
 
                 $label.html(input);

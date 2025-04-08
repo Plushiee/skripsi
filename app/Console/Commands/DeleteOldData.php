@@ -18,7 +18,7 @@ class DeleteOldData extends Command
      *
      * @var string
      */
-    protected $signature = 'app:delete-old-data';
+    protected $signature = 'db:delete-old-data';
 
     /**
      * The console command description.

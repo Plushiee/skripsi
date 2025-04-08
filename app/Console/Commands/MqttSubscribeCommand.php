@@ -171,7 +171,7 @@ class MqttSubscribeCommand extends Command
                 }
 
                 if (count($this->waterFlowData) >= 300) {
-                    $averageWaterFlow = array_sum($this->waterFlowData) / count($this->waterFlowData);
+                    $averageWaterFlow = round(array_sum($this->waterFlowData) / count($this->waterFlowData), 2);
 
                     $lastRecord = TabelArusAirModel::latest('created_at')->first();
                     $isDifferent = !$lastRecord || $lastRecord->debit != $averageWaterFlow;
@@ -191,7 +191,7 @@ class MqttSubscribeCommand extends Command
                 }
 
                 if (count($this->tdsData) >= 300) {
-                    $averageTDS = array_sum($this->tdsData) / count($this->tdsData);
+                    $averageTDS = round(array_sum($this->tdsData) / count($this->tdsData), 2);
 
                     $lastRecord = TabelTDSModel::latest('created_at')->first();
                     $isDifferent = !$lastRecord || $lastRecord->tds != $averageTDS;
@@ -211,7 +211,7 @@ class MqttSubscribeCommand extends Command
                 }
 
                 if (count($this->phData) >= 300) {
-                    $averagePH = array_sum($this->phData) / count($this->phData);
+                    $averagePH = round(array_sum($this->phData) / count($this->phData),2);
 
                     $lastRecord = TabelPHModel::latest('created_at')->first();
                     $isDifferent = !$lastRecord || $lastRecord->ph != $averagePH;
@@ -230,7 +230,7 @@ class MqttSubscribeCommand extends Command
                 }
 
                 if (count($this->pingData) >= 300) {
-                    $averagePing = array_sum($this->pingData) / count($this->pingData);
+                    $averagePing = round(array_sum($this->pingData) / count($this->pingData),2);
 
                     $lastRecord = TabelPingModel::latest('created_at')->first();
                     $isDifferent = !$lastRecord || $lastRecord->ping != $averagePing;

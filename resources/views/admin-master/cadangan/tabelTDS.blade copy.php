@@ -84,9 +84,9 @@
                             field: 'timestamp',
                             title: 'Timestamp'
                         },
-                        {
-                            field: 'id_area',
-                            title: 'Id Area'
+{
+                            field: 'nama_wilayah',
+                            title: 'Nama Wilayah'
                         },
                         {
                             field: 'ppm',

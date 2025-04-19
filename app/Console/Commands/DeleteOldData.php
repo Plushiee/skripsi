@@ -40,5 +40,6 @@ class DeleteOldData extends Command
         TabelPompaModel::where('created_at', '<', $seminggu)->delete();
         TabelTempHumModel::where('created_at', '<', $seminggu)->delete();
         TabelPingModel::where('created_at', '<', $seminggu)->delete();
+        TabelPompaModel::where('created_at', '<', $seminggu)->delete();
     }
 }

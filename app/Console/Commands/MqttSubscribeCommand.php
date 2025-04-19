@@ -75,6 +75,7 @@ class MqttSubscribeCommand extends Command
                     '72210456/temp_luar',
                     '72210456/temp_dalam',
                     '72210456/pump',
+                    '72210456/pump_relay',
                 ];
 
                 // Subscribe to each topic
@@ -262,9 +263,10 @@ class MqttSubscribeCommand extends Command
             case '72210456/pump_relay':
                 $lastRecord = TabelPompaModel::latest('created_at')->first();
                 $isDifferent = !$lastRecord || $lastRecord->status != $message;
-                if ($isDifferent && $lastRecord->otomatis == 1) {
-                    TabelPompaModel::create(['id_area' => 1, 'status' => $message, 'otomatis' => 0]);
+                if ($isDifferent) {
+                    TabelPompaModel::create(['id_area' => 1, 'status' => $message, 'otomatis' => $lastRecord->otomatis ?? 0, 'suhu' => $lastRecord->suhu ?? null]);
                 }
+                echo sprintf("Received message on topic [%s]: %s\n", $topic, $message);
                 break;
             case '72210456/pump':
                 break;

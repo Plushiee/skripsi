@@ -33,11 +33,12 @@ class DeleteOldData extends Command
     public function handle()
     {
         $seminggu = Carbon::now()->subDays(8);
+        $sehari = Carbon::now()->subDays(1);
 
         TabelPHModel::where('created_at', '<', $seminggu)->delete();
         TabelArusAirModel::where('created_at', '<', $seminggu)->delete();
         TabelTDSModel::where('created_at', '<', $seminggu)->delete();
-        TabelPompaModel::where('created_at', '<', $seminggu)->delete();
+        TabelPompaModel::where('created_at', '<', $sehari)->delete();
         TabelTempHumModel::where('created_at', '<', $seminggu)->delete();
         TabelPingModel::where('created_at', '<', $seminggu)->delete();
     }

@@ -143,11 +143,11 @@ class AdminController extends Controller
 
         if (!$s && !$e) {
             $e = Carbon::now()->format('d-m-Y');
-            $s = Carbon::parse($e)->subDays(32)->format('d-m-Y');
+            $s = Carbon::parse($e)->subDays(8)->format('d-m-Y');
         } elseif ($s && !$e) {
             $e = Carbon::now()->format('d-m-Y');
         } elseif (!$s && $e) {
-            $s = Carbon::parse($e)->subDays(32)->format('d-m-Y');
+            $s = Carbon::parse($e)->subDays(8)->format('d-m-Y');
         }
 
         try {

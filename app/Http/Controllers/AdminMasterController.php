@@ -112,7 +112,7 @@ class AdminMasterController extends Controller
             })
             ->get();
 
-        $pompaStatus = TabelPompaModel::latest('created_at')->first();
+        $pompaStatus = TabelPompaModel::latest('id')->first();
         if ($pompaStatus == null) {
             $pompaStatus = new TabelPompaModel();
             $pompaStatus->status = 'mati';
@@ -142,11 +142,11 @@ class AdminMasterController extends Controller
 
         if (!$s && !$e) {
             $e = Carbon::now()->format('d-m-Y');
-            $s = Carbon::parse($e)->subDays(32)->format('d-m-Y');
+            $s = Carbon::parse($e)->subDays(8)->format('d-m-Y');
         } elseif ($s && !$e) {
             $e = Carbon::now()->format('d-m-Y');
         } elseif (!$s && $e) {
-            $s = Carbon::parse($e)->subDays(32)->format('d-m-Y');
+            $s = Carbon::parse($e)->subDays(8)->format('d-m-Y');
         }
 
         try {

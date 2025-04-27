@@ -260,7 +260,7 @@
                             <div class="container-fluid">
                                 <div class="form-check form-switch float-end">
                                     <input class="form-check-input" type="checkbox" role="switch" id="automatic-switch"
-                                        {{ $pompaStatus->otomatis == true ? 'checked' : '' }}>
+                                        {{ $pompaStatus->otomatis == 1 ? 'checked' : '' }}>
                                 </div>
                             </div>
                         </div>
@@ -347,6 +347,7 @@
             let pumpStatus = 'mati';
             let temperatureThreshold = 25.0;
             let first = true;
+            let notification = false;
 
             const status = '{{ $pompaStatus->status }}';
             const otomatis = '{{ $pompaStatus->otomatis }}';
@@ -417,17 +418,24 @@
                     pumpStatus = 'mati';
                 }
 
-                if ($('#pump-switch').is(':checked') & !$('#automatic-switch').is(':checked')) {
+                if ($('#pump-switch').is(':checked') && !$('#automatic-switch').is(':checked')) {
                     $('#automatic-switch').prop('disabled', true);
                     pumpStatus = 'nyala';
                     isAutomatic = false;
                     sendPompaStatus(pumpStatus, isAutomatic);
-                } else if (!$('#pump-switch').is(':checked') & !$('#automatic-switch').is(':checked')) {
+                } else if (!$('#pump-switch').is(':checked') && !$('#automatic-switch').is(':checked')) {
                     $('#automatic-switch').prop('disabled', false);
                     pumpStatus = 'mati';
                     isAutomatic = false;
                     sendPompaStatus(pumpStatus, isAutomatic);
                 }
+
+                // Buat disable tombol setelah perubahan selama 20 detik
+                $('#pump-switch, #automatic-switch').prop('disabled', true); // Disable dulu
+                setTimeout(function() {
+                    $('#pump-switch, #automatic-switch').prop('disabled',
+                        false); // Enable lagi setelah 20 detik
+                }, 20000); // 20000 ms = 20 detik
                 checkTemperature();
             }
 
@@ -441,13 +449,16 @@
                 let temperatureUser = parseFloat($inputNumber.val()) || 25.0;
 
                 if ($('#automatic-switch').is(':checked')) {
-                    if (temperatureThreshold < temperatureUser) {
+                    if (temperatureThreshold >= temperatureUser) {
                         isAutomatic = true;
                         pumpStatus = 'nyala';
-                    } else if (temperatureThreshold >= temperatureUser) {
+                        notification = false;
+                    } else if (temperatureThreshold < temperatureUser) {
                         isAutomatic = true;
                         pumpStatus = 'mati';
+                        notification = false;
                     }
+
                     if (sendmqtt) {
                         sendPompaStatus(pumpStatus, isAutomatic);
                     }
@@ -456,19 +467,14 @@
                 updatePumpStatus(pumpStatus);
             }
 
-            // setTimeout(checkTemperature, 1000);
-
             // Fungsi: Kirim Status Pompa
             function sendPompaStatus(status, otomatis = false) {
                 updatePumpStatus(status);
 
-                console.log("Menutup EventSource");
-                if (window.eventSource instanceof EventSource) {
-                    window.eventSource.close();
-                    window.eventSource = null;
-                }
-                console.log("Mengirim permintaan AJAX");
+                console.log("Menutup Worker EventSource");
+                stopSSEWorker();
 
+                console.log("Mengirim permintaan AJAX");
                 $.ajax({
                     url: '{{ route('api.post.pompa') }}',
                     type: 'POST',
@@ -479,21 +485,25 @@
                         suhu: $('#temperature-input').val()
                     },
                     beforeSend: function() {
-                        let loadingMessage = status === 'nyala' ? 'Menyalakan' : 'Mematikan';
-                        alert.fire({
-                            icon: 'info',
-                            title: loadingMessage + ' Pompa...',
-                            timer: 15000,
-                            showConfirmButton: false,
-                            allowOutsideClick: false,
-                            didOpen: () => {
-                                Swal.showLoading();
-                            },
-                        });
+                        if (notification) {
+                            let loadingMessage = status === 'nyala' ? 'Menyalakan' : 'Mematikan';
+                            alert.fire({
+                                icon: 'info',
+                                title: loadingMessage + ' Pompa...',
+                                timer: 30000,
+                                showConfirmButton: false,
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                },
+                            });
+                        } else {
+                            notification = true
+                        }
                     },
                     success: function(response) {
-                        // Buka kembali event source setelah AJAX berhasil
-                        window.eventSource = new EventSource("{{ route('api.get.sse') }}");
+                        // Buka kembali worker event source setelah AJAX berhasil
+                        startSSEWorker();
                         let successMessage = status === 'nyala' ? 'Pompa Menyala!' : 'Pompa Mati!';
 
                         // Tambahkan penundaan 15 detik sebelum menampilkan notifikasi sukses
@@ -509,8 +519,9 @@
                             icon: 'error',
                             title: 'Gagal mengirim perintah ke API!'
                         });
-                        // Buka kembali event source meskipun terjadi error
-                        window.eventSource = new EventSource("{{ route('api.get.sse') }}");
+                        // Buka kembali worker event source meskipun terjadi error
+                        startSSEWorker();
+                        // window.eventSource = new EventSource("{{ route('api.admin.get.sse') }}");
                     }
                 });
             }
@@ -530,6 +541,7 @@
             }
 
             // MQTT Udara
+
             function updateTemperatureHumidity(temperature, humidity, sendmqtt = true) {
                 var displayElement = $("#temperature-humidity-display");
                 var currentText = displayElement.html().split("<br>");
@@ -538,21 +550,24 @@
                 var currentHumidity = parseInt(currentText[1]) || 0;
 
                 if (temperature !== null) {
-                    currentTemperature = temperature + '° C';
-                } else {
-                    currentTemperature = currentTemperature + '° C';
+                    if (currentTemperature !== temperature) {
+                        currentTemperature = temperature;
+                        displayElement.html(currentTemperature + '° C<br>' + currentHumidity + '%');
+                    }
+                }
+
+                if (humidity !== null) {
+                    if (currentHumidity !== humidity) {
+                        currentHumidity = humidity;
+                        displayElement.html(currentTemperature + '° C<br>' + currentHumidity + '%');
+                    }
                 }
 
                 temperatureThreshold = parseFloat(temperature);
 
-                if (humidity !== null) {
-                    currentHumidity = humidity + '%';
-                } else {
-                    currentHumidity = currentHumidity + '%';
+                if (sendmqtt) {
+                    checkTemperature();
                 }
-
-                displayElement.html(currentTemperature + "<br>" + currentHumidity);
-                checkTemperature(sendmqtt);
             }
 
             // MQTT Status
@@ -694,49 +709,185 @@
                 .catch(error => console.error('Error fetching weather data:', error));
 
             // EventSource (SSE) with Throttling
-            window.eventSource = new EventSource("{{ route('api.get.sse') }}");
-            let retryTimeout = 1000; // Start with 1 second for reconnection attempts
+            var sseWorker = null;
 
-            const throttledUpdate = _.throttle((event) => {
-                try {
-                    const data = JSON.parse(event.data);
+            function initSSEWorker() {
+                if (!sseWorker) {
+                    sseWorker = new Worker("{{ asset('main/js/sse-worker.js') }}");
 
-                    updateTemperatureHumidity(data.tempHum?.temperature ?? null, data.tempHum?.humidity ??
-                        null, false);
-                    updateVolume(data.arusAir || 0);
-                    updateTDS(data.tds || 0);
-                    updateStatus(data.status_sensor, data.status_relay);
+                    sseWorker.onmessage = (event) => {
+                        const {
+                            type,
+                            data,
+                            message
+                        } = event.data;
 
-                    window.myGauge.data.datasets[0].value = data.arusAir || 0;
-                    window.myGauge.update();
+                        if (type === 'data') {
+                            console.log("Data dari worker:", data);
+                            // Update UI dari sini
+                        } else if (type === 'error') {
+                            console.error("SSE Error from worker:", message);
+                        } else if (type === 'open') {
+                            console.log("SSE connection opened via worker.");
+                        }
+                    };
 
-                    fm.setPercentage(data.ping || 0);
-                } catch (error) {
-                    console.error("Error parsing SSE response:", error);
+                    sseWorker.onerror = (error) => {
+                        console.error("Worker error:", error);
+                    };
                 }
-            }, 3000);
+            }
 
-            window.eventSource.onmessage = throttledUpdate;
+            function startSSEWorker() {
+                initSSEWorker(); // pastikan worker sudah ada
+                sseWorker.postMessage({
+                    type: 'start',
+                    originRoute: "{{ route('api.admin.get.sse') }}"
+                });
+            }
 
-            window.eventSource.onerror = (error) => {
-                console.error("SSE error:", error);
-                window.eventSource.close(); // Close the connection
-                setTimeout(() => {
-                    window.eventSource = new window.EventSource("{{ route('api.get.sse') }}");
-                    retryTimeout = Math.min(retryTimeout * 2,
-                        10000);
-                }, retryTimeout);
+            function stopSSEWorker() {
+                if (sseWorker) {
+                    sseWorker.postMessage({
+                        type: 'stop'
+                    });
+                }
+            }
+
+            // Mulai Worker
+            startSSEWorker();
+
+            // Handle pesan dari Worker
+            sseWorker.onmessage = (e) => {
+                const {
+                    type,
+                    data,
+                    error
+                } = e.data;
+
+                if (type === 'message') {
+                    try {
+                        const parsedData = JSON.parse(data);
+
+                        updateTemperatureHumidity(parsedData.tempHum?.temperature ?? null, parsedData.tempHum
+                            ?.humidity ?? null, false);
+                        updateVolume(parsedData.arusAir || 0);
+                        updateTDS(parsedData.tds || 0);
+                        updateStatus(parsedData.status_sensor, parsedData.status_relay);
+
+                        if ($('#temperature-input').val() != (parsedData.suhu_pompa ?? 0)) {
+                            $('#temperature-input').val(parsedData.suhu_pompa ?? 0);
+                        }
+
+                        if (!$('#automatic-switch').is(':checked')) {
+                            $('#automatic-switch').prop('checked', parsedData.otomatis == 1);
+                        }
+
+                        if (!$('#pump-switch').is(':checked')) {
+                            $('#pump-switch').prop('checked', parsedData.status_pompa == 1);
+                        }
+
+                        window.myGauge.data.datasets[0].value = parsedData.arusAir || 0;
+                        window.myGauge.update();
+
+                        fm.setPercentage(parsedData.ping || 0);
+
+                    } catch (error) {
+                        console.error("Error parsing SSE response from worker:", error);
+                    }
+                } else if (type === 'error') {
+                    console.error("SSE Worker error:", message);
+                } else if (type === 'open') {
+                    console.log("SSE connection established via Worker.");
+                }
             };
 
-            window.eventSource.onopen = () => {
-                console.log("SSE connection established.");
-                retryTimeout = 5000;
-            };
-
+            // Stop Worker saat halaman di unload
             window.addEventListener("beforeunload", () => {
-                window.eventSource.close();
-                console.log("SSE connection closed.");
+                stopSSEWorker();
             });
+
+            // window.eventSource = new EventSource("{{ route('api.admin.get.sse') }}");
+            // let retryTimeout = 1000; // Start with 1 second for reconnection attempts
+            // let sseActive = true;
+
+            // const throttledUpdate = _.throttle((event) => {
+            //     if (!sseActive) return;
+            //     try {
+            //         const data = JSON.parse(event.data);
+
+            //         updateTemperatureHumidity(data.tempHum?.temperature ?? null, data.tempHum?.humidity ??
+            //             null, false);
+            //         updateVolume(data.arusAir || 0);
+            //         updateTDS(data.tds || 0);
+            //         updateStatus(data.status_sensor, data.status_relay);
+
+            //         if ($('#temperature-input').val() != (data.suhu_pompa ?? 0)) {
+            //             $('#temperature-input').val(data.suhu_pompa ?? 0);
+            //         }
+
+            //         if (!$('#automatic-switch').is(':checked')) {
+            //             $('#automatic-switch').prop('checked', data.otomatis == 1);
+            //         }
+
+            //         if (!$('#pump-switch').is(':checked')) {
+            //             $('#pump-switch').prop('checked', data.status_pompa == 1);
+            //         }
+
+
+            //         window.myGauge.data.datasets[0].value = data.arusAir || 0;
+            //         window.myGauge.update();
+
+            //         fm.setPercentage(data.ping || 0);
+
+            //         console.log('Temperature : ', temperatureThreshold);
+            //     } catch (error) {
+            //         console.error("Error parsing SSE response:", error);
+            //     }
+            // }, 5000);
+
+            // window.eventSource.onmessage = throttledUpdate;
+
+            // window.eventSource.onerror = (error) => {
+            //     console.error("SSE error:", error);
+
+            //     if (window.eventSource) {
+            //         window.eventSource.close();
+            //         window.eventSource = null;
+            //     }
+
+            //     setTimeout(() => {
+            //         window.eventSource = new window.EventSource("{{ route('api.admin.get.sse') }}");
+            //         retryTimeout = Math.min(retryTimeout * 2,
+            //             10000);
+            //     }, retryTimeout);
+            // };
+
+            // window.eventSource.onopen = () => {
+            //     console.log("SSE connection established.");
+            //     retryTimeout = 5000;
+            // };
+
+            // document.addEventListener("visibilitychange", () => {
+            //     if (document.visibilityState === 'hidden') {
+            //         if (window.eventSource) {
+            //             window.eventSource.close();
+            //             window.eventSource = null;
+            //         }
+            //         sseActive = false;
+            //         console.log("SSE connection closed (visibilitychange).");
+            //     }
+            // });
+
+
+            // window.addEventListener("beforeunload", () => {
+            //     if (window.eventSource) {
+            //         window.eventSource.close();
+            //         window.eventSource = null;
+            //     }
+            //     sseActive = false;
+            //     console.log("SSE connection closed.");
+            // });
         });
     </script>
 @endsection

@@ -493,7 +493,7 @@
                     },
                     success: function(response) {
                         // Buka kembali event source setelah AJAX berhasil
-                        window.eventSource = new EventSource("{{ route('api.get.sse') }}");
+                        window.eventSource = new EventSource("{{ route('api.admin.get.sse') }}");
                         let successMessage = status === 'nyala' ? 'Pompa Menyala!' : 'Pompa Mati!';
 
                         // Tambahkan penundaan 15 detik sebelum menampilkan notifikasi sukses
@@ -510,7 +510,7 @@
                             title: 'Gagal mengirim perintah ke API!'
                         });
                         // Buka kembali event source meskipun terjadi error
-                        window.eventSource = new EventSource("{{ route('api.get.sse') }}");
+                        window.eventSource = new EventSource("{{ route('api.admin.get.sse') }}");
                     }
                 });
             }
@@ -696,7 +696,7 @@
                 .catch(error => console.error('Error fetching weather data:', error));
 
             // EventSource (SSE) with Throttling
-            window.eventSource = new EventSource("{{ route('api.get.sse') }}");
+            window.eventSource = new EventSource("{{ route('api.admin.get.sse') }}");
             let retryTimeout = 1000; // Start with 1 second for reconnection attempts
 
             const throttledUpdate = _.throttle((event) => {
@@ -724,7 +724,7 @@
                 console.error("SSE error:", error);
                 window.eventSource.close(); // Close the connection
                 setTimeout(() => {
-                    window.eventSource = new window.EventSource("{{ route('api.get.sse') }}");
+                    window.eventSource = new window.EventSource("{{ route('api.admin.get.sse') }}");
                     retryTimeout = Math.min(retryTimeout * 2,
                         10000);
                 }, retryTimeout);

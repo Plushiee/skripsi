@@ -779,4 +779,56 @@ class ApiController extends Controller
             ],
         );
     }
+
+    public function getSSEAdmin()
+    {
+        // Set unlimited execution time
+        set_time_limit(0);
+
+        return response()->stream(
+            function () {
+                while (!connection_aborted()) {
+                    // Ambil data dari cache atau gunakan default jika tidak ada
+                    $cachedData = cache('sse-update-event', []);
+
+                    // Validasi format data dan gunakan default jika tidak sesuai
+                    $formattedData = [
+                        'ph' => $cachedData['ph'] ?? 0,
+                        'ping' => $cachedData['ping'] ?? 0,
+                        'tds' => $cachedData['tds'] ?? 0,
+                        'tempHum' => [
+                            'temperature' => $cachedData['tempHum']['temperature'] ?? 0,
+                            'humidity' => $cachedData['tempHum']['humidity'] ?? 0,
+                        ],
+                        'arusAir' => $cachedData['arusAir'] ?? 0,
+                        'status_sensor' => $cachedData['status_sensor'] == "true" ? 1 : 0,
+                        'status_relay' => $cachedData['status_relay'] == "true" ? 1 : 0,
+                        'status_pompa' => TabelPompaModel::latest()->first()->status == 'nyala' ? 1 : 0,
+                        'otomatis_pompa' => TabelPompaModel::latest()->first()->otomatis ?? 0,
+                        'suhu_pompa' => TabelPompaModel::latest()->first()->suhu ?? 0,
+                    ];
+
+                    // Kirim data sebagai event SSE
+                    echo 'data: ' . json_encode($formattedData) . "\n\n";
+
+                    // Flush buffer untuk menghindari tumpukan data
+                    @ob_flush();
+                    flush();
+
+                    // Tunggu sebelum mengirim data berikutnya (interval 1 detik)
+                    sleep(1);
+                }
+
+                // Hentikan script jika koneksi ditutup
+                exit;
+            },
+            200,
+            [
+                'Content-Type' => 'text/event-stream',
+                'Cache-Control' => 'no-cache',
+                'Connection' => 'keep-alive',
+                'X-Accel-Buffering' => 'no',
+            ],
+        );
+    }
 }

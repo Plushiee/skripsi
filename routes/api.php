@@ -28,6 +28,8 @@ Route::post('/post/admin', [ApiController::class, 'postUser'])->name('api.post.a
 Route::middleware('auth')->prefix('/update/admin')->group(function () {
     Route::post('/bio', [ApiController::class, 'updateAdmin'])->name('api.admin-utama.update.bio');
     Route::post('/photo', [ApiController::class, 'updateAdminPhoto'])->name('api.admin-utama.update.photo');
+    Route::get('/get/sse-admin', [ApiController::class, 'getSSEAdmin'])->name('api.admin.get.sse');
+
 });
 // API UPDATE End
 

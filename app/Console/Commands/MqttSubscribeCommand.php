@@ -27,7 +27,6 @@ class MqttSubscribeCommand extends Command
     protected $koleksiData = [
         'arusAir' => null,
         'tds' => null,
-        'ph' => null,
         'tempHum' => [
             'temperature' => null,
             'humidity' => null,
@@ -41,7 +40,6 @@ class MqttSubscribeCommand extends Command
     protected $humidityData = [];
     protected $waterFlowData = [];
     protected $tdsData = [];
-    protected $phData = [];
     protected $pingData = [];
 
 
@@ -57,11 +55,6 @@ class MqttSubscribeCommand extends Command
             try {
                 $mqtt = MQTT::connection('default');
 
-                // $mqtt = MQTT::connection([
-                //     'max_inflight_messages' => 100, // Tingkatkan batas pesan yang sedang diproses
-                // ]);
-
-                // Array of topics to subscribe
                 $topics = [
                     '72210456/waterflow',
                     '72210456/totalmilliLiters',
@@ -76,12 +69,12 @@ class MqttSubscribeCommand extends Command
                     '72210456/temp_dalam',
                     '72210456/pump',
                     '72210456/pump_relay',
+                    '72210456/dump'
                 ];
 
                 // Subscribe to each topic
                 foreach ($topics as $topic) {
                     $mqtt->subscribe($topic, function (string $topic, string $message) {
-                        // echo sprintf("Received message on topic [%s]: %s\n", $topic, $message);
                         $this->handleMessage($topic, $message);
                     }, 0);
                 }
@@ -108,7 +101,6 @@ class MqttSubscribeCommand extends Command
         match ($topic) {
             '72210456/waterflow' => $this->koleksiData['arusAir'] = $message,
             '72210456/TDS' => $this->koleksiData['tds'] = $message,
-            // '72210456/PH' => $this->koleksiData['ph'] = $message,
             '72210456/humidityDHT' => $this->koleksiData['tempHum']['humidity'] = $message,
             '72210456/temp_luar' => $this->koleksiData['tempHum']['temperature'] = $message,
             '72210456/ping' => $this->koleksiData['ping'] = $message,
@@ -117,49 +109,12 @@ class MqttSubscribeCommand extends Command
             default => null,
         };
 
-        // Kirim ke cache jika semua data telah diterima
-        // if ($this->isAllDataCollected()) {
-        // echo sprintf('Data lengkap, menyimpan ke cache: ', $this->koleksiData);
-
+        // Kirim ke cache jika data telah diterima
         cache()->put('sse-update-event', $this->koleksiData, now()->addSeconds(5));
-        // $this->resetkoleksiData();
-        // }
 
 
         // Simpan ke database sesuai topik
         $this->saveToDatabase($topic, $message);
-    }
-
-    // Fungsi untuk memeriksa apakah semua data telah terkumpul
-    protected function isAllDataCollected()
-    {
-        return isset(
-            $this->koleksiData['arusAir'],
-            $this->koleksiData['tds'],
-            // $this->koleksiData['ph'],
-            $this->koleksiData['tempHum']['temperature'],
-            $this->koleksiData['tempHum']['humidity'],
-            $this->koleksiData['ping'],
-            $this->koleksiData['status_sensor'],
-            $this->koleksiData['status_relay']
-        );
-    }
-
-    // Fungsi untuk mereset data yang dikumpulkan
-    protected function resetkoleksiData()
-    {
-        $this->koleksiData = [
-            'arusAir' => null,
-            'tds' => null,
-            'ph' => null,
-            'tempHum' => [
-                'temperature' => null,
-                'humidity' => null,
-            ],
-            'ping' => null,
-            'status_sensor' => null,
-            'status_relay' => null,
-        ];
     }
 
     // Fungsi menyimpan data ke database
@@ -205,26 +160,6 @@ class MqttSubscribeCommand extends Command
                     }
                 }
                 break;
-
-            case '72210456/PH':
-                if ($message != null) {
-                    $this->phData[] = $message;
-                }
-
-                if (count($this->phData) >= 300) {
-                    $averagePH = round(array_sum($this->phData) / count($this->phData),2);
-
-                    $lastRecord = TabelPHModel::latest('created_at')->first();
-                    $isDifferent = !$lastRecord || $lastRecord->ph != $averagePH;
-
-                    if ($isDifferent) {
-                        TabelPHModel::create(['id_area' => 1, 'ph' => $averagePH]);
-                        $this->phData = [];
-                    } else {
-                        $this->phData = [];
-                    }
-                }
-                break;
             case '72210456/ping':
                 if ($message != null) {
                     $this->pingData[] = $message;
@@ -254,11 +189,9 @@ class MqttSubscribeCommand extends Command
                 break;
             case '72210456/esp8266_sensor':
                 $this->koleksiData['status_sensor'] = $message;
-                // Log::info('status_sensor: ' . $message);
                 break;
             case '72210456/esp8266_relay':
                 $this->koleksiData['status_relay'] = $message;
-                // Log::info('status_sensor: ' . $message);
                 break;
             case '72210456/pump_relay':
                 $lastRecord = TabelPompaModel::latest('created_at')->first();
@@ -266,9 +199,8 @@ class MqttSubscribeCommand extends Command
                 if ($isDifferent) {
                     TabelPompaModel::create(['id_area' => 1, 'status' => $message, 'otomatis' => $lastRecord->otomatis ?? 0, 'suhu' => $lastRecord->suhu ?? null]);
                 }
-                echo sprintf("Received message on topic [%s]: %s\n", $topic, $message);
                 break;
-            case '72210456/pump':
+            case '72210456/dump':
                 break;
         }
     }
@@ -284,11 +216,9 @@ class MqttSubscribeCommand extends Command
             $this->humidityData[] = $this->tempHumData['humidity'];
         }
 
-        // Cek apakah kita sudah memiliki 10 data
-        if (count($this->temperatureData) >= 10 && count($this->humidityData) >= 300) {
-            // Hitung rata-rata
-            $averageTemperature = array_sum($this->temperatureData) / count($this->temperatureData);
-            $averageHumidity = array_sum($this->humidityData) / count($this->humidityData);
+        if (count($this->temperatureData) >= 300 && count($this->humidityData) >= 300) {
+            $averageTemperature = round(array_sum($this->temperatureData) / count($this->temperatureData), 2);
+            $averageHumidity = round(array_sum($this->humidityData) / count($this->humidityData), 2);
 
             $lastRecord = TabelTempHumModel::latest('created_at')->first();
             $isDifferent = !$lastRecord ||

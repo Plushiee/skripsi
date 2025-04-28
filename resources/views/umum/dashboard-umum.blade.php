@@ -64,8 +64,8 @@
                                 <div class="card-body card-body-carousel">
                                     <h5 class="card-title mb-3">Status Mesin</h5>
                                     <div class="text-center my-4">
-                                        <h5 id="status" class="text-center"><i class="fa fa-circle red-shadow mb-4" aria-hidden="true"
-                                                id="iot-status-icon"></i><br>OFFLINE</h4>
+                                        <h5 id="status" class="text-center"><i class="fa fa-circle red-shadow mb-4"
+                                                aria-hidden="true" id="iot-status-icon"></i><br>OFFLINE</h4>
                                     </div>
                                 </div>
                             </div>
@@ -168,7 +168,8 @@
                                 @if (!$adminJaga->isEmpty())
                                     @foreach ($adminJaga as $admin)
                                         <div class="carousel-item @if ($loop->first) active @endif">
-                                            <div class="d-flex align-items-center justify-content-center" style="height: 300px;">
+                                            <div class="d-flex align-items-center justify-content-center"
+                                                style="height: 300px;">
                                                 <div class="card-body px-1 px-sm-4 mx-1 mx-sm-5 pb-0 pt-2">
                                                     <div class="card shadow-sm" style="border-radius: 15px;">
                                                         <div class="card-body px-3 px-md-4 py-2 py-md-4">
@@ -215,13 +216,15 @@
                                     @endforeach
                                 @else
                                     <div class="carousel-item active">
-                                        <div class="d-flex align-items-center justify-content-center mx-5" style="height: 300px;">
+                                        <div class="d-flex align-items-center justify-content-center mx-5"
+                                            style="height: 300px;">
                                             <div class="card shadow-sm bg-body-tertiary mx-4"
                                                 style="border-radius: 15px; width: 100%; max-width: 500px; height: 200px">
                                                 <div class="card-body p-4">
                                                     <div class="d-flex align-items-center justify-content-center"
                                                         style="height: 100%;">
-                                                        <p class="text-center m-0 fw-bold text-muted">Tidak Ada Jadwal Jaga Petugas</p>
+                                                        <p class="text-center m-0 fw-bold text-muted">Tidak Ada Jadwal Jaga
+                                                            Petugas</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -293,14 +296,13 @@
                     );
                 } else if (status_sensor == 1 & status_relay == 0) {
                     displayElement.html(
-                       "<i class='fa fa-circle yellow-shadow mb-4' aria-hidden='true' id='iot-status-icon'></i><br>Relay"
+                        "<i class='fa fa-circle yellow-shadow mb-4' aria-hidden='true' id='iot-status-icon'></i><br>Relay"
                     );
                 } else if (status_sensor == 0 & status_relay == 1) {
                     displayElement.html(
                         "<i class='fa fa-circle yellow-shadow mb-4' aria-hidden='true' id='iot-status-icon'></i><br>Sensor"
                     );
-                }
-                else {
+                } else {
                     displayElement.html(
                         "<i class='fa fa-circle red-shadow mb-4' aria-hidden='true' id='iot-status-icon'></i><br>OFFLINE"
                     );
@@ -423,51 +425,91 @@
                 })
                 .catch(error => console.error('Error fetching weather data:', error));
 
-            // EventSource (SSE) with Throttling
-            window.eventSource = new EventSource("{{ route('api.get.sse') }}");
-            let retryTimeout = 1000; // Start with 1 second for reconnection attempts
+            // EventSource (SSE) with Throttling by Worker
+            var sseWorker = null;
 
-            const throttledUpdate = _.throttle((event) => {
-                try {
-                    const data = JSON.parse(event.data);
+            function initSSEWorker() {
+                if (!sseWorker) {
+                    sseWorker = new Worker("{{ asset('main/js/sse-worker.js') }}");
 
-                    updateTemperatureHumidity(data.tempHum?.temperature ?? null, data.tempHum?.humidity ??
-                        null);
-                    updateVolume(data.arusAir || 0);
-                    updateTDS(data.tds || 0);
-                    updateStatus(data.status_sensor, data.status_relay);
+                    sseWorker.onmessage = (event) => {
+                        const {
+                            type,
+                            data,
+                            message
+                        } = event.data;
 
-                    console.log(data);
+                        if (type === 'data') {
+                            console.log("Data dari worker:", data);
+                            // Update UI dari sini
+                        } else if (type === 'error') {
+                            console.error("SSE Error from worker:", message);
+                        } else if (type === 'open') {
+                            console.log("SSE connection opened via worker.");
+                        }
+                    };
 
-                    window.myGauge.data.datasets[0].value = data.arusAir || 0;
-                    window.myGauge.update();
-
-                    fm.setPercentage(data.ping || 0);
-                } catch (error) {
-                    console.error("Error parsing SSE response:", error);
+                    sseWorker.onerror = (error) => {
+                        console.error("Worker error:", error);
+                    };
                 }
-            }, 3000);
+            }
 
-            window.eventSource.onmessage = throttledUpdate;
+            function startSSEWorker() {
+                initSSEWorker(); // pastikan worker sudah ada
+                sseWorker.postMessage({
+                    type: 'start',
+                    originRoute: "{{ route('api.admin.get.sse') }}"
+                });
+            }
 
-            window.eventSource.onerror = (error) => {
-                console.error("SSE error:", error);
-                window.eventSource.close(); // Close the connection
-                setTimeout(() => {
-                    window.eventSource = new window.EventSource("{{ route('api.get.sse') }}");
-                    retryTimeout = Math.min(retryTimeout * 2,
-                        10000);
-                }, retryTimeout);
+            function stopSSEWorker() {
+                if (sseWorker) {
+                    sseWorker.postMessage({
+                        type: 'stop'
+                    });
+                }
+            }
+
+            // Mulai Worker
+            startSSEWorker();
+
+            // Handle pesan dari Worker
+            sseWorker.onmessage = (e) => {
+                const {
+                    type,
+                    data,
+                    error
+                } = e.data;
+
+                if (type === 'message') {
+                    try {
+                        const parsedData = JSON.parse(data);
+
+                        updateTemperatureHumidity(parsedData.tempHum?.temperature ?? null, parsedData.tempHum
+                            ?.humidity ?? null, false);
+                        updateVolume(parsedData.arusAir || 0);
+                        updateTDS(parsedData.tds || 0);
+                        updateStatus(parsedData.status_sensor, parsedData.status_relay);
+
+                        window.myGauge.data.datasets[0].value = parsedData.arusAir || 0;
+                        window.myGauge.update();
+
+                        fm.setPercentage(parsedData.ping || 0);
+
+                    } catch (error) {
+                        console.error("Error parsing SSE response from worker:", error);
+                    }
+                } else if (type === 'error') {
+                    console.error("SSE Worker error:", message);
+                } else if (type === 'open') {
+                    console.log("SSE connection established via Worker.");
+                }
             };
 
-            window.eventSource.onopen = () => {
-                console.log("SSE connection established.");
-                retryTimeout = 5000;
-            };
-
+            // Stop Worker saat halaman di unload
             window.addEventListener("beforeunload", () => {
-                window.eventSource.close();
-                console.log("SSE connection closed.");
+                stopSSEWorker();
             });
         });
     </script>

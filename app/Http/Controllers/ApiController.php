@@ -752,8 +752,8 @@ class ApiController extends Controller
                             'humidity' => $cachedData['tempHum']['humidity'] ?? 0,
                         ],
                         'arusAir' => $cachedData['arusAir'] ?? 0,
-                        'status_sensor' => $cachedData['status_sensor'] == "true" ? 1 : 0,
-                        'status_relay' => $cachedData['status_relay'] == "true" ? 1 : 0,
+                        'status_sensor' => isset($cachedData['status_sensor']) ? ($cachedData['status_sensor'] == "true" ? 1 : 0) : 0,
+                        'status_relay' => isset($cachedData['status_relay']) ? ($cachedData['status_relay'] == "true" ? 1 : 0) : 0,
                     ];
 
                     // Kirim data sebagai event SSE
@@ -801,11 +801,11 @@ class ApiController extends Controller
                             'humidity' => $cachedData['tempHum']['humidity'] ?? 0,
                         ],
                         'arusAir' => $cachedData['arusAir'] ?? 0,
-                        'status_sensor' => $cachedData['status_sensor'] == "true" ? 1 : 0,
-                        'status_relay' => $cachedData['status_relay'] == "true" ? 1 : 0,
-                        'status_pompa' => TabelPompaModel::latest()->first()->status == 'nyala' ? 1 : 0,
-                        'otomatis_pompa' => TabelPompaModel::latest()->first()->otomatis ?? 0,
-                        'suhu_pompa' => TabelPompaModel::latest()->first()->suhu ?? 0,
+                        'status_sensor' => isset($cachedData['status_sensor']) ? ($cachedData['status_sensor'] == "true" ? 1 : 0) : 0,
+                        'status_relay' => isset($cachedData['status_relay']) ? ($cachedData['status_relay'] == "true" ? 1 : 0) : 0,
+                        'status_pompa' => optional(TabelPompaModel::latest()->first())->status == 'nyala' ? 1 : (optional(TabelPompaModel::latest()->first())->status == 'mati' ? 0 : null),
+                        'otomatis_pompa' => optional(TabelPompaModel::latest()->first())->otomatis ?? 0,
+                        'suhu_pompa' => optional(TabelPompaModel::latest()->first())->suhu ?? 0,
                     ];
 
                     // Kirim data sebagai event SSE

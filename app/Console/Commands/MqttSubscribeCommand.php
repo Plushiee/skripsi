@@ -51,6 +51,8 @@ class MqttSubscribeCommand extends Command
     // Implementasi logika untuk berlangganan ke topik MQTT
     public function handle()
     {
+        $lastMessageTime = now(); // Tambahkan: waktu terakhir menerima message
+
         while (true) {
             try {
                 $mqtt = MQTT::connection('default');
@@ -72,27 +74,35 @@ class MqttSubscribeCommand extends Command
                     '72210456/dump'
                 ];
 
-                // Subscribe to each topic
                 foreach ($topics as $topic) {
-                    $mqtt->subscribe($topic, function (string $topic, string $message) {
+                    $mqtt->subscribe($topic, function (string $topic, string $message) use (&$lastMessageTime) {
+                        $lastMessageTime = now(); // Update setiap ada pesan baru
                         $this->handleMessage($topic, $message);
                     }, 0);
+                    sprintf("Subscribed to topic: %s\n", $topic);
                 }
 
-                // Start the loop to listen for incoming messages
-                $mqtt->loop(true);
+                while (true) {
+                    $mqtt->loop(true);
+
+                    // Tambahan: cek apakah sudah lewat 5 detik tanpa message
+                    if (now()->diffInSeconds($lastMessageTime) >= 5) {
+                        $this->pushDefaultCache();
+                        $lastMessageTime = now();  // Reset timer setelah push
+                    }
+
+                    usleep(100000); // Delay kecil (0.1 detik) supaya tidak berat CPU
+                }
             } catch (MqttClientException $e) {
-
                 $this->error("MQTT error: " . $e->getMessage());
-
                 sleep(5);
-
                 continue;
             }
         }
 
         return 0;
     }
+
 
     // Fungsi Handle message yang masuk
     protected function handleMessage($topic, $message)
@@ -166,7 +176,7 @@ class MqttSubscribeCommand extends Command
                 }
 
                 if (count($this->pingData) >= 300) {
-                    $averagePing = round(array_sum($this->pingData) / count($this->pingData),2);
+                    $averagePing = round(array_sum($this->pingData) / count($this->pingData), 2);
 
                     $lastRecord = TabelPingModel::latest('created_at')->first();
                     $isDifferent = !$lastRecord || $lastRecord->ping != $averagePing;
@@ -246,5 +256,23 @@ class MqttSubscribeCommand extends Command
     {
         $lastRecord = app($model)::latest('created_at')->first();
         return !$lastRecord || $lastRecord->$column != $newValue;
+    }
+
+    // Fungsi untuk mengisi default cache
+    protected function pushDefaultCache()
+    {
+        $defaultData = [
+            'arusAir' => null,
+            'tds' => null,
+            'tempHum' => [
+                'temperature' => null,
+                'humidity' => null,
+            ],
+            'ping' => null,
+            'status_sensor' => null,
+            'status_relay' => null,
+        ];
+
+        cache()->put('sse-update-event', $defaultData, now()->addSeconds(5));
     }
 }

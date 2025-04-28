@@ -1,11 +1,11 @@
     <!-- Navbar -->
     <nav class="navbar bg-body-tertiary">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#menu-toggle" id="menu-toggle">
-                <span class="btn btn-default">
+            <button class="navbar-brand" href="#menu-toggle" id="menu-toggle" style="border: none !important; background-color: transparent;">
+                <span class="btn btn-default border">
                     <i class="fa fa-bars" aria-hidden="true"></i>
                 </span>
-            </a>
+            </button>
         </div>
     </nav>
 

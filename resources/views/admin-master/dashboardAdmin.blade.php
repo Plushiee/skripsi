@@ -708,7 +708,7 @@
                 })
                 .catch(error => console.error('Error fetching weather data:', error));
 
-            // EventSource (SSE) with Throttling
+            // EventSource (SSE) with Throttling by Worker
             var sseWorker = null;
 
             function initSSEWorker() {
@@ -806,88 +806,6 @@
             window.addEventListener("beforeunload", () => {
                 stopSSEWorker();
             });
-
-            // window.eventSource = new EventSource("{{ route('api.admin.get.sse') }}");
-            // let retryTimeout = 1000; // Start with 1 second for reconnection attempts
-            // let sseActive = true;
-
-            // const throttledUpdate = _.throttle((event) => {
-            //     if (!sseActive) return;
-            //     try {
-            //         const data = JSON.parse(event.data);
-
-            //         updateTemperatureHumidity(data.tempHum?.temperature ?? null, data.tempHum?.humidity ??
-            //             null, false);
-            //         updateVolume(data.arusAir || 0);
-            //         updateTDS(data.tds || 0);
-            //         updateStatus(data.status_sensor, data.status_relay);
-
-            //         if ($('#temperature-input').val() != (data.suhu_pompa ?? 0)) {
-            //             $('#temperature-input').val(data.suhu_pompa ?? 0);
-            //         }
-
-            //         if (!$('#automatic-switch').is(':checked')) {
-            //             $('#automatic-switch').prop('checked', data.otomatis == 1);
-            //         }
-
-            //         if (!$('#pump-switch').is(':checked')) {
-            //             $('#pump-switch').prop('checked', data.status_pompa == 1);
-            //         }
-
-
-            //         window.myGauge.data.datasets[0].value = data.arusAir || 0;
-            //         window.myGauge.update();
-
-            //         fm.setPercentage(data.ping || 0);
-
-            //         console.log('Temperature : ', temperatureThreshold);
-            //     } catch (error) {
-            //         console.error("Error parsing SSE response:", error);
-            //     }
-            // }, 5000);
-
-            // window.eventSource.onmessage = throttledUpdate;
-
-            // window.eventSource.onerror = (error) => {
-            //     console.error("SSE error:", error);
-
-            //     if (window.eventSource) {
-            //         window.eventSource.close();
-            //         window.eventSource = null;
-            //     }
-
-            //     setTimeout(() => {
-            //         window.eventSource = new window.EventSource("{{ route('api.admin.get.sse') }}");
-            //         retryTimeout = Math.min(retryTimeout * 2,
-            //             10000);
-            //     }, retryTimeout);
-            // };
-
-            // window.eventSource.onopen = () => {
-            //     console.log("SSE connection established.");
-            //     retryTimeout = 5000;
-            // };
-
-            // document.addEventListener("visibilitychange", () => {
-            //     if (document.visibilityState === 'hidden') {
-            //         if (window.eventSource) {
-            //             window.eventSource.close();
-            //             window.eventSource = null;
-            //         }
-            //         sseActive = false;
-            //         console.log("SSE connection closed (visibilitychange).");
-            //     }
-            // });
-
-
-            // window.addEventListener("beforeunload", () => {
-            //     if (window.eventSource) {
-            //         window.eventSource.close();
-            //         window.eventSource = null;
-            //     }
-            //     sseActive = false;
-            //     console.log("SSE connection closed.");
-            // });
         });
     </script>
 @endsection

@@ -459,7 +459,7 @@
                 initSSEWorker(); // pastikan worker sudah ada
                 sseWorker.postMessage({
                     type: 'start',
-                    originRoute: "{{ route('api.admin.get.sse') }}"
+                    originRoute: "{{ route('api.get.sse') }}"
                 });
             }
 

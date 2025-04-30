@@ -1,5 +1,5 @@
 @extends('admin-master.templates.main-admin-utama')
-@section('title', 'Rumah Hijau Fakultas Biologi | Reservoir Air')
+@section('title', 'HYDROSENSE | Reservoir Air')
 @section('css-extras')
     <!-- Core Bootstrap Table -->
     <link rel="stylesheet" href="{{ asset('main/css/bootstrap-table.css') }}">

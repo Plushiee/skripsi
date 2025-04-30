@@ -1,5 +1,5 @@
 @extends('umum.templates.main-umum-utama')
-@section('title', 'Rumah Hijau Fakultas Biologi | Dashboard')
+@section('title', 'HYDROSENSE | Dashboard')
 @section('css-extras')
     <link rel="stylesheet" href="{{ asset('main/css/dashboard.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"

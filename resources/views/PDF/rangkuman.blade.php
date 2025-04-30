@@ -4,7 +4,7 @@
 <head>
     <link rel="stylesheet" href="{{ public_path('main/css/bootstrap.min.css') }}">
 
-    <title>Rumah Hijau Fakultas Bioteknologi | Rangkuman Data</title>
+    <title>HYDROSENSE | Rangkuman Data</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -54,35 +54,20 @@
                 <a class="navbar-brand d-flex align-items-center">
                     <img src="{{ public_path('main/img/LOGO-FAK-BIOTEK.png') }}" alt="Logo" width="25"
                         class="d-inline-block ms-2">
-                    <span class="fw-bold text-light ms-2">Rumah Hijau Fakultas Bioteknologi</span>
+                    <span class="fw-bold text-light ms-2">HYDROSENSE</span>
                 </a>
             </div>
         </nav>
 
-        <div class="m-4">
+        <div class="m-3">
             <div class="card border border-dark-subtle shadow" style="border-radius: 0%;">
                 <div class="card-header mb-0 pb-0">
                     <h2 class="text-center fw-bold">Rangkuman Data Periode {{ $s }} hingga
                         {{ $e }}</h2>
                 </div>
 
-                <div class="card-body card-all d-flex justify-content-center align-items-center">
-                    <div class="row">
-                        <div class="col-12 text-center w-100">
-                            <canvas id="chartAll"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-
-        <div class="page"></div>
-
-        <div class="m-4">
-            <div class="card border border-dark-subtle shadow">
-                <div class="card-body sub-card">
-                    <div class="row">
+                <div class="card-body card-all d-flex justify-content-center align-items-center m-3">
+                    <div class="row m-1">
                         <div class="col-12 col-md-6">
                             <div class="row">
                                 <canvas class="subcanvas w-100" id="chartArus"></canvas>
@@ -105,6 +90,7 @@
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
@@ -119,8 +105,8 @@
         $(document).ready(function() {
             const data = @json($data);
             const canvas = document.getElementById('chartAll');
-            canvas.width = 7000;
-            canvas.height = 4600;
+            // canvas.width = 7000;
+            // canvas.height = 4600;
 
             const canvases = document.querySelectorAll(
                 '#chartArus, #chartTempHumidity, #chartTDS, #chartReservoir');
@@ -246,42 +232,6 @@
                     backgroundColor: 'rgba(255, 206, 86, 0.2)',
                     borderWidth: 1
                 }]
-            );
-
-            // Grafik Gabungan Semua
-            createChart(
-                $('#chartAll'),
-                'line',
-                Object.keys(data.temperature), // Gunakan tanggal yang sama untuk semua
-                [{
-                        label: 'TDS (ppm)',
-                        data: Object.values(data.tds),
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        borderWidth: 1
-                    },
-                    {
-                        label: 'Arus (Debit)',
-                        data: Object.values(data.arus),
-                        borderColor: 'rgba(153, 102, 255, 1)',
-                        backgroundColor: 'rgba(153, 102, 255, 0.2)',
-                        borderWidth: 1
-                    },
-                    {
-                        label: 'Temperature (°C)',
-                        data: Object.values(data.temperature),
-                        borderColor: 'rgba(255, 99, 132, 1)',
-                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                        borderWidth: 1
-                    },
-                    {
-                        label: 'Humidity (%)',
-                        data: Object.values(data.humidity),
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                        borderWidth: 1
-                    }
-                ]
             );
         });
     </script>

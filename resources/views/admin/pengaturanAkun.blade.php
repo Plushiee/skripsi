@@ -1,5 +1,5 @@
 @extends('admin.templates.main-admin-utama')
-@section('title', 'Rumah Hijau Fakultas Biologi | Akun')
+@section('title', 'HYDROSENSE | Akun')
 @section('css-extras')
     <link rel="stylesheet" href="{{ asset('main/css/dashboard.css') }}">
     <link href="https://unpkg.com/filepond/dist/filepond.css" rel="stylesheet">

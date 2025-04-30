@@ -744,12 +744,12 @@ class ApiController extends Controller
 
                     // Validasi format data dan gunakan default jika tidak sesuai
                     $formattedData = [
-                        'ph' => $cachedData['ph'] ?? 0,
+                        'ph' => $cachedData['ph'] ?? 0.00,
                         'ping' => $cachedData['ping'] ?? 0,
-                        'tds' => $cachedData['tds'] ?? 0,
+                        'tds' => $cachedData['tds'] ?? 0.00,
                         'tempHum' => [
-                            'temperature' => $cachedData['tempHum']['temperature'] ?? 0,
-                            'humidity' => $cachedData['tempHum']['humidity'] ?? 0,
+                            'temperature' => $cachedData['tempHum']['temperature'] ?? 0.00,
+                            'humidity' => $cachedData['tempHum']['humidity'] ?? 0.00,
                         ],
                         'arusAir' => $cachedData['arusAir'] ?? 0,
                         'status_sensor' => isset($cachedData['status_sensor']) ? ($cachedData['status_sensor'] == "true" ? 1 : 0) : 0,
@@ -793,12 +793,12 @@ class ApiController extends Controller
 
                     // Validasi format data dan gunakan default jika tidak sesuai
                     $formattedData = [
-                        'ph' => $cachedData['ph'] ?? 0,
+                        'ph' => $cachedData['ph'] ?? 0.00,
                         'ping' => $cachedData['ping'] ?? 0,
-                        'tds' => $cachedData['tds'] ?? 0,
+                        'tds' => $cachedData['tds'] ?? 0.00,
                         'tempHum' => [
-                            'temperature' => $cachedData['tempHum']['temperature'] ?? 0,
-                            'humidity' => $cachedData['tempHum']['humidity'] ?? 0,
+                            'temperature' => $cachedData['tempHum']['temperature'] ?? 0.00,
+                            'humidity' => $cachedData['tempHum']['humidity'] ?? 0.00,
                         ],
                         'arusAir' => $cachedData['arusAir'] ?? 0,
                         'status_sensor' => isset($cachedData['status_sensor']) ? ($cachedData['status_sensor'] == "true" ? 1 : 0) : 0,
@@ -818,8 +818,6 @@ class ApiController extends Controller
                     // Tunggu sebelum mengirim data berikutnya (interval 1 detik)
                     sleep(1);
                 }
-
-                // Hentikan script jika koneksi ditutup
                 exit;
             },
             200,

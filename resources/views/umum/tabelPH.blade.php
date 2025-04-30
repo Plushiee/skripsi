@@ -1,5 +1,5 @@
 @extends('umum.templates.main-umum-utama')
-@section('title', 'Rumah Hijau Fakultas Biologi | PH')
+@section('title', 'HYDROSENSE | PH')
 @section('css-extras')
     <!-- Core Bootstrap Table -->
     <link rel="stylesheet" href="{{ asset('main/css/bootstrap-table.css') }}">

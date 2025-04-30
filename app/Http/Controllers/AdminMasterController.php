@@ -101,14 +101,23 @@ class AdminMasterController extends Controller
     public function dashboardAdmin()
     {
         // Ambil hari dan waktu sekarang
-        $currentDay = Carbon::now()->locale('id')->isoFormat('dddd'); // Contoh: "Sabtu"
+        $currentDay = Carbon::now()->locale('id')->isoFormat('dddd');
         $currentTime = Carbon::now()->format('H:i');
 
         // Query admin yang berjaga
-        $adminJaga = User::select('nama', 'foto', 'hari', 'jam', 'role')->whereRaw('JSON_CONTAINS(hari, JSON_QUOTE(?))', [$currentDay])
+        $adminJaga = User::select('nama', 'foto', 'hari', 'jam', 'role')
+            ->whereRaw('JSON_CONTAINS(hari, JSON_QUOTE(?))', [$currentDay])
             ->where(function ($query) use ($currentTime) {
-                $query->whereRaw("TIME(JSON_UNQUOTE(JSON_EXTRACT(jam, '$.s'))) <= ?", [$currentTime])
-                    ->whereRaw("TIME(JSON_UNQUOTE(JSON_EXTRACT(jam, '$.e'))) >= ?", [$currentTime]);
+                $query->where(function ($q) use ($currentTime) {
+                    $q->whereRaw("TIME(JSON_UNQUOTE(JSON_EXTRACT(jam, '$.s'))) <= TIME(JSON_UNQUOTE(JSON_EXTRACT(jam, '$.e')))")
+                        ->whereRaw("TIME(?) BETWEEN TIME(JSON_UNQUOTE(JSON_EXTRACT(jam, '$.s'))) AND TIME(JSON_UNQUOTE(JSON_EXTRACT(jam, '$.e')))", [$currentTime]);
+                })->orWhere(function ($q) use ($currentTime) {
+                    $q->whereRaw("TIME(JSON_UNQUOTE(JSON_EXTRACT(jam, '$.s'))) > TIME(JSON_UNQUOTE(JSON_EXTRACT(jam, '$.e')))")
+                        ->where(function ($q2) use ($currentTime) {
+                            $q2->whereRaw("TIME(?) >= TIME(JSON_UNQUOTE(JSON_EXTRACT(jam, '$.s')))", [$currentTime])
+                                ->orWhereRaw("TIME(?) <= TIME(JSON_UNQUOTE(JSON_EXTRACT(jam, '$.e')))", [$currentTime]);
+                        });
+                });
             })
             ->get();
 

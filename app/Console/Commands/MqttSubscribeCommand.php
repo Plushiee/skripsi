@@ -2,7 +2,6 @@
 
 namespace App\Console\Commands;
 
-use App\Models\TabelPompaModel;
 use Illuminate\Console\Command;
 use PhpMqtt\Client\Facades\MQTT;
 use App\Events\MqttSubscribeEvent;
@@ -13,6 +12,7 @@ use App\Models\TabelTDSModel;
 use App\Models\TabelTempHumModel;
 use PhpMqtt\Client\Exceptions\MqttClientException;
 use App\Events\SSEUpdateEvent;
+use App\Models\TabelPompaModel;
 use Illuminate\Support\Facades\Log;
 
 class MqttSubscribeCommand extends Command
@@ -40,6 +40,7 @@ class MqttSubscribeCommand extends Command
     protected $humidityData = [];
     protected $waterFlowData = [];
     protected $tdsData = [];
+    protected $phData = [];
     protected $pingData = [];
 
 
@@ -51,12 +52,11 @@ class MqttSubscribeCommand extends Command
     // Implementasi logika untuk berlangganan ke topik MQTT
     public function handle()
     {
-        $lastMessageTime = now(); // Tambahkan: waktu terakhir menerima message
-
         while (true) {
             try {
                 $mqtt = MQTT::connection('default');
 
+                // Topic yang di subscribe
                 $topics = [
                     '72210456/waterflow',
                     '72210456/totalmilliLiters',
@@ -75,24 +75,12 @@ class MqttSubscribeCommand extends Command
                 ];
 
                 foreach ($topics as $topic) {
-                    $mqtt->subscribe($topic, function (string $topic, string $message) use (&$lastMessageTime) {
-                        $lastMessageTime = now(); // Update setiap ada pesan baru
+                    $mqtt->subscribe($topic, function (string $topic, string $message) {
                         $this->handleMessage($topic, $message);
                     }, 0);
-                    sprintf("Subscribed to topic: %s\n", $topic);
                 }
 
-                while (true) {
-                    $mqtt->loop(true);
-
-                    // Tambahan: cek apakah sudah lewat 5 detik tanpa message
-                    if (now()->diffInSeconds($lastMessageTime) >= 5) {
-                        $this->pushDefaultCache();
-                        $lastMessageTime = now();  // Reset timer setelah push
-                    }
-
-                    usleep(100000); // Delay kecil (0.1 detik) supaya tidak berat CPU
-                }
+                $mqtt->loop(true);
             } catch (MqttClientException $e) {
                 $this->error("MQTT error: " . $e->getMessage());
                 sleep(5);
@@ -103,11 +91,9 @@ class MqttSubscribeCommand extends Command
         return 0;
     }
 
-
     // Fungsi Handle message yang masuk
     protected function handleMessage($topic, $message)
     {
-        // Update data yang diterima berdasarkan topik
         match ($topic) {
             '72210456/waterflow' => $this->koleksiData['arusAir'] = $message,
             '72210456/TDS' => $this->koleksiData['tds'] = $message,
@@ -119,12 +105,45 @@ class MqttSubscribeCommand extends Command
             default => null,
         };
 
-        // Kirim ke cache jika data telah diterima
-        cache()->put('sse-update-event', $this->koleksiData, now()->addSeconds(5));
+        //  Kirim ke cache jika semua data telah diterima
+        if ($this->isAllDataCollected()) {
+            cache()->put('sse-update-event', $this->koleksiData, now()->addSeconds(5));
+            $this->resetkoleksiData();
+        }
 
 
         // Simpan ke database sesuai topik
         $this->saveToDatabase($topic, $message);
+    }
+
+    // Fungsi untuk memeriksa apakah semua data telah terkumpul
+    protected function isAllDataCollected()
+    {
+        return isset(
+            $this->koleksiData['arusAir'],
+            $this->koleksiData['tds'],
+            $this->koleksiData['tempHum']['temperature'],
+            $this->koleksiData['tempHum']['humidity'],
+            $this->koleksiData['ping'],
+            $this->koleksiData['status_sensor'],
+            $this->koleksiData['status_relay']
+        );
+    }
+
+    // Fungsi untuk mereset data yang dikumpulkan
+    protected function resetkoleksiData()
+    {
+        $this->koleksiData = [
+            'arusAir' => null,
+            'tds' => null,
+            'tempHum' => [
+                'temperature' => null,
+                'humidity' => null,
+            ],
+            'ping' => null,
+            'status_sensor' => null,
+            'status_relay' => null,
+        ];
     }
 
     // Fungsi menyimpan data ke database
@@ -249,30 +268,5 @@ class MqttSubscribeCommand extends Command
                 $this->humidityData = [];
             }
         }
-    }
-
-    // Fungsi cek apakah data berbeda
-    protected function isBedaData($model, $column, $newValue)
-    {
-        $lastRecord = app($model)::latest('created_at')->first();
-        return !$lastRecord || $lastRecord->$column != $newValue;
-    }
-
-    // Fungsi untuk mengisi default cache
-    protected function pushDefaultCache()
-    {
-        $defaultData = [
-            'arusAir' => null,
-            'tds' => null,
-            'tempHum' => [
-                'temperature' => null,
-                'humidity' => null,
-            ],
-            'ping' => null,
-            'status_sensor' => null,
-            'status_relay' => null,
-        ];
-
-        cache()->put('sse-update-event', $defaultData, now()->addSeconds(5));
     }
 }

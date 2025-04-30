@@ -1,5 +1,5 @@
 @extends('admin-master.templates.main-admin-utama')
-@section('title', 'Rumah Hijau Fakultas Biologi | Dashboard')
+@section('title', 'HYDROSENSE | Dashboard')
 @section('css-extras')
     <link rel="stylesheet" href="{{ asset('main/css/dashboard.css') }}">
 @endsection

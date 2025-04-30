@@ -1,5 +1,5 @@
 @extends('umum.templates.main-umum-utama')
-@section('title', 'Rumah Hijau Fakultas Biologi | Rangkuman Data')
+@section('title', 'HYDROSENSE | Rangkuman Data')
 @section('css-extras')
     <!-- CSS untuk Bootstrap Datepicker -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css">
@@ -48,11 +48,6 @@
                 </div>
 
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-12">
-                            <canvas id="chartAll"></canvas>
-                        </div>
-                    </div>
                     <div class="row">
                         <div class="col-12 col-md-6">
                             <div class="row">
@@ -262,42 +257,6 @@
                     backgroundColor: 'rgba(255, 206, 86, 0.2)',
                     borderWidth: 1
                 }]
-            );
-
-            // Grafik Gabungan Semua
-            createChart(
-                $('#chartAll'),
-                'line',
-                Object.keys(data.temperature), // Gunakan tanggal yang sama untuk semua
-                [{
-                        label: 'TDS (ppm)',
-                        data: Object.values(data.tds),
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        borderWidth: 1
-                    },
-                    {
-                        label: 'Arus (Debit)',
-                        data: Object.values(data.arus),
-                        borderColor: 'rgba(153, 102, 255, 1)',
-                        backgroundColor: 'rgba(153, 102, 255, 0.2)',
-                        borderWidth: 1
-                    },
-                    {
-                        label: 'Temperature (°C)',
-                        data: Object.values(data.temperature),
-                        borderColor: 'rgba(255, 99, 132, 1)',
-                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                        borderWidth: 1
-                    },
-                    {
-                        label: 'Humidity (%)',
-                        data: Object.values(data.humidity),
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                        borderWidth: 1
-                    }
-                ]
             );
         });
     </script>

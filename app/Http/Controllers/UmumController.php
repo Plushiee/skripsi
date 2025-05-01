@@ -162,7 +162,7 @@ class UmumController extends Controller
 
             // Encode URL untuk mengatasi spasi atau karakter khusus
             $encodedHtmlPath = 'file:///' . str_replace(' ', '%20', str_replace('\\', '/', $htmlPath));
-            Log::info("Encoded HTML path: $encodedHtmlPath");
+            // Log::info("Encoded HTML path: $encodedHtmlPath");
             $pdfPath = storage_path('app\public\Rangkuman-' . $s . '-to-' . $e . '.pdf');
 
             // Jalankan perintah untuk menghasilkan PDF
@@ -174,14 +174,14 @@ class UmumController extends Controller
 
             exec($command . ' 2>&1', $output, $returnVar);
 
-            Log::info('Current working directory: ' . getcwd());
-            Log::info('Command executed: ' . $command);
-            Log::info("Command output: " . implode("\n", $output));
-            Log::info("Command return value: $returnVar");
+            // Log::info('Current working directory: ' . getcwd());
+            // Log::info('Command executed: ' . $command);
+            // Log::info("Command output: " . implode("\n", $output));
+            // Log::info("Command return value: $returnVar");
 
             // Jika proses gagal
             if ($returnVar !== 0 || !file_exists($pdfPath)) {
-                Log::error("Proses generate PDF gagal: " . implode("\n", $output));
+                // Log::error("Proses generate PDF gagal: " . implode("\n", $output));
                 return response()->json(['error' => 'Gagal membuat file PDF.'], 500);
             }
 
@@ -194,7 +194,7 @@ class UmumController extends Controller
                 'Content-Disposition' => 'inline; filename="Rangkuman-' . $s . '-to-' . $e . '.pdf"',
             ])->deleteFileAfterSend(true);
         } catch (\Exception $e) {
-            Log::error("Error saat mencetak rangkuman: " . $e->getMessage());
+            // Log::error("Error saat mencetak rangkuman: " . $e->getMessage());
             return response()->json(['error' => 'Terjadi kesalahan saat mencetak rangkuman.'], 500);
         }
     }

@@ -16,6 +16,8 @@ class MqttPublishCommand extends Command
 
     protected $counter = 0;
 
+    protected $lastPublishedStatus = null;
+
     public function handle()
     {
         while (true) {
@@ -47,9 +49,6 @@ class MqttPublishCommand extends Command
             } catch (MqttClientException $e) {
                 Log::error("MQTT error: " . $e->getMessage());
                 sleep(4);
-            } catch (\Exception $e) {
-                Log::error("General error: " . $e->getMessage());
-                sleep(4);
             }
         }
     }
@@ -65,11 +64,14 @@ class MqttPublishCommand extends Command
 
     protected function publishPumpStatus($mqtt, $status)
     {
-        try {
-            $mqtt->publish('72210456/pump', $status, 0);
-        } catch (MqttClientException $e) {
-            Log::error("Failed to publish message: " . $e->getMessage());
-            throw $e;
+        if ($this->lastPublishedStatus !== $status) {
+            try {
+                $mqtt->publish('72210456/pump', $status, 0);
+                $this->lastPublishedStatus = $status;
+            } catch (MqttClientException $e) {
+                Log::error("Failed to publish message: " . $e->getMessage());
+                throw $e;
+            }
         }
     }
 

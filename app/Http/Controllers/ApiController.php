@@ -32,7 +32,7 @@ class ApiController extends Controller
             'humidity' => optional(TabelTempHumModel::latest()->first())->humidity ?? 0,
         ];
         $arusAir = optional(TabelArusAirModel::latest()->first())->debit ?? 0;
-        $pompa = TabelPompaModel::latest()->first();
+        $pompa =  TabelPompaModel::orderByDesc('id')->first();
         $ping = optional(TabelPingModel::latest()->first())->ping ?? 0;
 
         $formattedData = [
@@ -102,161 +102,6 @@ class ApiController extends Controller
         }
     }
 
-    // public function getPH(Request $request)
-    // {
-    //     $query = TabelPHModel::query();
-
-    //     if ($request->has('start_time') && $request->has('end_time')) {
-    //         $startTime = $this->validDate($request->input('start_time'));
-    //         $endTime = $this->validDate($request->input('end_time'));
-    //         $query->whereBetween('created_at', [$startTime, $endTime]);
-
-    //         $ph = $query->get();
-    //     } else {
-    //         $ph = TabelPHModel::where('created_at', '>=', now()->subDays(3))->get();
-    //     }
-
-    //     $formattedData = [
-    //         'total' => $ph->count(),
-    //         'totalNotFiltered' => TabelPHModel::count(),
-    //         'rows' => $ph
-    //             ->map(function ($item) {
-    //                 return [
-    //                     'timestamp' => $item->created_at->format('Y-m-d H:i:s'),
-    //                     'id_area' => $item->id_area,
-    //                     'ph' => $item->ph,
-    //                 ];
-    //             })
-    //             ->toArray(),
-    //     ];
-
-    //     return response()->json($formattedData);
-    // }
-
-    // public function getTDS(Request $request)
-    // {
-    //     $query = TabelTDSModel::query();
-
-    //     if ($request->has('start_time') && $request->has('end_time')) {
-    //         $startTime = $this->validDate($request->input('start_time'));
-    //         $endTime = $this->validDate($request->input('end_time'));
-    //         $query->whereBetween('created_at', [$startTime, $endTime]);
-
-    //         $ph = $query->get();
-    //     } else {
-    //         $ph = TabelTDSModel::where('created_at', '>=', now()->subDays(3))->get();
-    //     }
-
-    //     $formattedData = [
-    //         'total' => $ph->count(),
-    //         'totalNotFiltered' => TabelTDSModel::count(),
-    //         'rows' => $ph
-    //             ->map(function ($item) {
-    //                 return [
-    //                     'timestamp' => $item->created_at->format('Y-m-d H:i:s'),
-    //                     'id_area' => $item->id_area,
-    //                     'ppm' => $item->ppm,
-    //                 ];
-    //             })
-    //             ->toArray(),
-    //     ];
-
-    //     return response()->json($formattedData);
-    // }
-
-    // public function getUdara(Request $request)
-    // {
-    //     $query = TabelTempHumModel::query();
-
-    //     if ($request->has('start_time') && $request->has('end_time')) {
-    //         $startTime = $this->validDate($request->input('start_time'));
-    //         $endTime = $this->validDate($request->input('end_time'));
-    //         $query->whereBetween('created_at', [$startTime, $endTime]);
-
-    //         $ph = $query->get();
-    //     } else {
-    //         $ph = TabelTempHumModel::where('created_at', '>=', now()->subDays(3))->get();
-    //     }
-
-    //     $formattedData = [
-    //         'total' => $ph->count(),
-    //         'totalNotFiltered' => TabelTempHumModel::count(),
-    //         'rows' => $ph
-    //             ->map(function ($item) {
-    //                 return [
-    //                     'timestamp' => $item->created_at->format('Y-m-d H:i:s'),
-    //                     'id_area' => $item->id_area,
-    //                     'temperature' => $item->temperature,
-    //                     'humidity' => $item->humidity,
-    //                 ];
-    //             })
-    //             ->toArray(),
-    //     ];
-
-    //     return response()->json($formattedData);
-    // }
-
-    // public function getPing(Request $request)
-    // {
-    //     $query = TabelPingModel::query();
-
-    //     if ($request->has('start_time') && $request->has('end_time')) {
-    //         $startTime = $this->validDate($request->input('start_time'));
-    //         $endTime = $this->validDate($request->input('end_time'));
-    //         $query->whereBetween('created_at', [$startTime, $endTime]);
-
-    //         $ph = $query->get();
-    //     } else {
-    //         $ph = TabelPingModel::where('created_at', '>=', now()->subDays(3))->get();
-    //     }
-
-    //     $formattedData = [
-    //         'total' => $ph->count(),
-    //         'totalNotFiltered' => TabelPingModel::count(),
-    //         'rows' => $ph
-    //             ->map(function ($item) {
-    //                 return [
-    //                     'timestamp' => $item->created_at->format('Y-m-d H:i:s'),
-    //                     'id_area' => $item->id_area,
-    //                     'ping' => $item->ping,
-    //                 ];
-    //             })
-    //             ->toArray(),
-    //     ];
-
-    //     return response()->json($formattedData);
-    // }
-
-    // public function getArusAir(Request $request)
-    // {
-    //     $query = TabelArusAirModel::query();
-
-    //     if ($request->has('start_time') && $request->has('end_time')) {
-    //         $startTime = $this->validDate($request->input('start_time'));
-    //         $endTime = $this->validDate($request->input('end_time'));
-    //         $query->whereBetween('created_at', [$startTime, $endTime]);
-
-    //         $ph = $query->get();
-    //     } else {
-    //         $ph = TabelArusAirModel::where('created_at', '>=', now()->subDays(3))->get();
-    //     }
-
-    //     $formattedData = [
-    //         'total' => $ph->count(),
-    //         'totalNotFiltered' => TabelArusAirModel::count(),
-    //         'rows' => $ph
-    //             ->map(function ($item) {
-    //                 return [
-    //                     'timestamp' => $item->created_at->format('Y-m-d H:i:s'),
-    //                     'id_area' => $item->id_area,
-    //                     'debit' => $item->debit,
-    //                 ];
-    //             })
-    //             ->toArray(),
-    //     ];
-
-    //     return response()->json($formattedData);
-    // }
     public function getPH(Request $request)
     {
         $query = TabelPHModel::query();
@@ -447,16 +292,21 @@ class ApiController extends Controller
             'status' => 'required|in:nyala,mati',
         ]);
 
-        $pompa = new TabelPompaModel();
-        $pompa->id_area = 1;
-        $pompa->status = $request->input('status');
-        if ($request->has('suhu')) {
-            $pompa->suhu = $request->input('suhu');
-        } else {
-            $pompa->suhu = null;
+        $lastPompa =  TabelPompaModel::orderByDesc('id')->first();
+        $isdifferent = $lastPompa->status != $request->input('status') && $lastPompa->otomatis != $request->input('status') || $request->boolean('otomatis', false) != $lastPompa->otomatis;
+
+        if ($isdifferent) {
+            $pompa = new TabelPompaModel();
+            $pompa->id_area = 1;
+            $pompa->status = $request->input('status');
+            if ($request->has('suhu')) {
+                $pompa->suhu = $request->input('suhu');
+            } else {
+                $pompa->suhu = null;
+            }
+            $pompa->otomatis = $request->boolean('otomatis', false);
+            $pompa->save();
         }
-        $pompa->otomatis = $request->boolean('otomatis', false);
-        $pompa->save();
 
         return response()->json(['success' => 'Status pompa berhasil diubah!']);
     }
@@ -790,6 +640,13 @@ class ApiController extends Controller
                 while (!connection_aborted()) {
                     // Ambil data dari cache atau gunakan default jika tidak ada
                     $cachedData = cache('sse-update-event', []);
+                    $latestPompa = TabelPompaModel::orderByDesc('id')->first();
+
+                    $cachedData['status_pompa'] = ($latestPompa && $latestPompa->status == "nyala") ? 1 : 0;
+
+                    if (!isset($cachedData['status_sensor']) || $cachedData['status_sensor'] != true) {
+                        $cachedData['tds'] = 0;
+                    }
 
                     // Validasi format data dan gunakan default jika tidak sesuai
                     $formattedData = [
@@ -803,9 +660,9 @@ class ApiController extends Controller
                         'arusAir' => $cachedData['arusAir'] ?? 0,
                         'status_sensor' => isset($cachedData['status_sensor']) ? ($cachedData['status_sensor'] == "true" ? 1 : 0) : 0,
                         'status_relay' => isset($cachedData['status_relay']) ? ($cachedData['status_relay'] == "true" ? 1 : 0) : 0,
-                        'status_pompa' => optional(TabelPompaModel::latest()->first())->status == 'nyala' ? 1 : (optional(TabelPompaModel::latest()->first())->status == 'mati' ? 0 : null),
-                        'otomatis_pompa' => optional(TabelPompaModel::latest()->first())->otomatis ?? 0,
-                        'suhu_pompa' => optional(TabelPompaModel::latest()->first())->suhu ?? 0,
+                        'status_pompa' => $cachedData['status_pompa'] ?? 0,
+                        'otomatis_pompa' => $latestPompa->otomatis ?? 0,
+                        'suhu_pompa' => $latestPompa->suhu ?? 0,
                     ];
 
                     // Kirim data sebagai event SSE

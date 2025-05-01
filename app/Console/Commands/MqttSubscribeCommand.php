@@ -75,15 +75,15 @@ class MqttSubscribeCommand extends Command
 
                 foreach ($topics as $topic) {
                     $mqtt->subscribe($topic, function (string $topic, string $message) use ($mqtt) {
+                        // echo sprintf("Received message on topic [%s]: %s\n", $topic, $message);
                         $this->handleMessage($topic, $message, $mqtt);
                     }, 0);
                 }
 
                 $mqtt->loop(true);
-            } catch (MqttClientException $e) {
-                $this->error("MQTT error: " . $e->getMessage());
-                sleep(5);
-                continue;
+            }catch (MqttClientException $e) {
+                Log::error("MQTT error: " . $e->getMessage());
+                sleep(4);
             }
         }
 
@@ -220,9 +220,10 @@ class MqttSubscribeCommand extends Command
                 break;
             case '72210456/pump_relay':
                 $lastRecord = TabelPompaModel::latest('created_at')->first();
-                $isDifferent = !$lastRecord || $lastRecord->status != $message;
-                if ($isDifferent) {
-                    TabelPompaModel::create(['id_area' => 1, 'status' => $message, 'otomatis' => 0, 'suhu' => $lastRecord->suhu]);
+                $isDifferent = $isDifferent = !$lastRecord || $lastRecord->status != $message;
+
+                if ($isDifferent || !$lastRecord) {
+                    TabelPompaModel::create(['id_area' => 1, 'status' => $message, 'otomatis' => 0, 'suhu' => $lastRecord->suhu ?? 0]);
                 }
                 $mqtt->publish('72210456/pump', $message, 0);
                 break;

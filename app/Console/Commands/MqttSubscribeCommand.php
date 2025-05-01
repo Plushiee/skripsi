@@ -220,9 +220,8 @@ class MqttSubscribeCommand extends Command
                 break;
             case '72210456/pump_relay':
                 $lastRecord = TabelPompaModel::latest('created_at')->first();
-                $isDifferent = !$lastRecord || $lastRecord->status != $message && $lastRecord->otomatis == 0;
+                $isDifferent = !$lastRecord || $lastRecord->status != $message;
                 if ($isDifferent) {
-                    // Set otomatis ke 0 saat kontrol manual
                     TabelPompaModel::create(['id_area' => 1, 'status' => $message, 'otomatis' => 0, 'suhu' => $lastRecord->suhu]);
                 }
                 $mqtt->publish('72210456/pump', $message, 0);

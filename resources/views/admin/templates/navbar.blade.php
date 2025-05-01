@@ -12,7 +12,7 @@
 
                 <a href="{{ route('admin-master.akun.pengaturan') }}"><img
                         class="rounded-circle shadow-4-strong ms-1 me-3" alt="avatar2" height="40px"
-                        src="{{ asset('storage/' . Auth::user()->foto) }}"></a>
+                        src="{{ Auth::user()->foto ? asset('storage/' . Auth::user()->foto) : asset('main/img/default-avatar.jpg') }}"></a>
             </span>
         </div>
     </nav>

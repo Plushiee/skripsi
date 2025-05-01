@@ -24,22 +24,23 @@ class MqttPublishCommand extends Command
                 $this->counter++;
                 $this->publishDumpData($mqtt);
 
-                if ($this->counter > 5) {
-                    $pompa = TabelPompaModel::latest()->first();
-                    $suhu = TabelTempHumModel::latest()->first();
-                    if ($pompa) {
-                        if ($pompa->otomatis == 1) {
-                            if ($pompa->suhu > $suhu->suhu) {
+                $pompa = TabelPompaModel::orderByDesc('id')->first();
+                $suhu = TabelTempHumModel::orderByDesc('id')->first();
+
+                if ($pompa) {
+                    if ($pompa->otomatis == 1) {
+                        if ($suhu) {
+                            if ($pompa->suhu < $suhu->temperature) {
                                 $this->publishPumpStatus($mqtt, 'nyala');
                             } else {
                                 $this->publishPumpStatus($mqtt, 'mati');
                             }
                         } else {
-                            $this->publishPumpStatus($mqtt, $pompa->status);
+                            $this->publishPumpStatus($mqtt, 'mati');
                         }
+                    } else {
+                        $this->publishPumpStatus($mqtt, $pompa->status);
                     }
-
-                    $this->counter = 0;
                 }
 
                 sleep(3);

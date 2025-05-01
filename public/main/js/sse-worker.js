@@ -30,7 +30,7 @@ function connect() {
 
     eventSource.onopen = () => {
         self.postMessage({ type: 'open' });
-        retryTimeout = 5000;
+        retryTimeout = 1000;
     };
 }
 
@@ -38,9 +38,15 @@ self.onmessage = (e) => {
     const { type, originRoute } = e.data;
 
     if (type === 'start') {
-        self.originRoute = originRoute;
-        connect();
+        if (!eventSource) {
+            self.originRoute = originRoute;
+            connect();
+        }
     } else if (type === 'stop') {
+        if (eventSource) {
+            eventSource.close();
+        }
+    } else if (type === 'terminate') {
         if (eventSource) {
             eventSource.close();
             eventSource = null;

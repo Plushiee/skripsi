@@ -1,15 +1,12 @@
-@extends('umum.templates.main-umum-utama')
+@extends('admin-master.templates.main-admin-utama')
 @section('title', 'HYDROSENSE | Dashboard')
 @section('css-extras')
     <link rel="stylesheet" href="{{ asset('main/css/dashboard.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
-        integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
 @endsection
 @section('content')
     <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ route('umum.dashboard') }}">Home</a></li>
+            <li class="breadcrumb-item"><a href="#">Home</a></li>
             <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
         </ol>
     </nav>
@@ -64,7 +61,7 @@
                                 <div class="card-body card-body-carousel">
                                     <h5 class="card-title mb-3">Status Mesin</h5>
                                     <div class="text-center my-4">
-                                        <h5 id="status" class="text-center"><i class="fa fa-circle red-shadow mb-4"
+                                        <h4 id="status" class="text-center"><i class="fa fa-circle red-shadow mb-4"
                                                 aria-hidden="true" id="iot-status-icon"></i><br>OFFLINE</h4>
                                     </div>
                                 </div>
@@ -115,7 +112,7 @@
         </div>
     </div>
 
-    <div class="row">
+    <div class="row mb-2">
         <div class="col-12 col-lg-6 mb-3 mb-lg-0">
             <div class="card shadow">
                 <div class="card-body">
@@ -157,7 +154,6 @@
                 </div>
             </div>
         </div>
-
         <div class="col-12 col-lg-6 mb-3 mb-lg-0">
             <div class="card shadow">
                 <div class="card-body">
@@ -183,8 +179,8 @@
                                                                 </div>
 
                                                                 <div class="col-12">
-                                                                    <h5 class="mb-0 text-center">{{ $admin->nama }}</h5>
-                                                                    <p class=" mb-0 pb-1 text-center small ">
+                                                                    <h3 class="mb-0 text-center">{{ $admin->nama }}</h3>
+                                                                    <p class=" mb-1 pb-1 text-center">
                                                                         {{ $admin->role === 'admin' ? 'Botanist' : 'Senior Botanist' }}
                                                                     </p>
                                                                     <div
@@ -193,7 +189,7 @@
                                                                             <p class="small text-muted mb-1">
                                                                                 Hari Jaga
                                                                             </p>
-                                                                            <p class="mb-0">
+                                                                            <p class="mb-0 small">
                                                                                 {{ implode(', ', json_decode($admin->hari)) }}
                                                                             </p>
                                                                         </div>
@@ -248,6 +244,83 @@
             </div>
         </div>
     </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body shadow">
+                    <h3 class="card-title">Kontrol</h3>
+                    <div class="row align-items-center">
+                        <div class="col-8">
+                            <div class="container-fluid">
+                                <p class="card-text text-start">Otomatis</p>
+                            </div>
+                        </div>
+                        <div class="col-4 text-end">
+                            <div class="container-fluid">
+                                <div class="form-check form-switch float-end">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="automatic-switch"
+                                        {{ $pompaStatus->otomatis == 1 ? 'checked' : '' }}>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row align-items-center" id="temperature-control">
+                        <div class="col-6 col-sm-7 col-md-9 col-lg-8 col-xl-10">
+                            <div class="container-fluid">
+                                <p class="card-text text-start">Suhu Menyala</p>
+                            </div>
+                        </div>
+                        <div class="col-6 col-sm-5 col-md-3 col-lg-4 col-xl-2">
+                            <div class="container-fluid">
+                                <div class="input-group custom-height p-0 mx-2">
+                                    <button class="btn btn-outline-secondary" type="button" id="btn-minus">
+                                        <i class="fa fa-minus-circle"></i>
+                                    </button>
+                                    <input type="number" class="form-control custom-height" min="0"
+                                        max="100" step="1" id="temperature-input">
+                                    <button class="btn btn-outline-secondary" type="button" id="btn-plus">
+                                        <i class="fa fa-plus-circle"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row align-items-center mt-1" id="status-pompa">
+                        <div class="col-6 col-sm-7 col-md-9 col-lg-8 col-xl-4 col-xxl-8">
+                            <div class="container-fluid">
+                                <p class="card-text text-start">Status Pompa</p>
+                            </div>
+                        </div>
+                        <div class="col-6 col-sm-5 col-md-3 col-lg-4 col-xl-8 col-xxl-4 ps-0">
+                            <div class="container-fluid">
+                                <p class="card-text text-end mx-2 fw-bold" id="pump-status-text">
+                                    Mati&nbsp;&nbsp; <i class="fa fa-circle red-shadow" aria-hidden="true"
+                                        id="pump-status-icon"></i>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row align-items-center" id="pump-control">
+                        <div class="col-8">
+                            <div class="container-fluid">
+                                <p class="card-text text-start">Pompa</p>
+                            </div>
+                        </div>
+                        <div class="col-4 text-end">
+                            <div class="container-fluid">
+                                <div class="form-check form-switch float-end">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="pump-switch">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @section('jQuery-extras')
@@ -264,8 +337,212 @@
     <script src="https://cdn.jsdelivr.net/gh/emn178/chartjs-plugin-labels/src/chartjs-plugin-labels.js" defer></script>
     <script>
         $(document).ready(function() {
+            // Input dan Tombol Suhu
+            const $inputNumber = $('#temperature-input');
+            const $btnPlus = $('#btn-plus');
+            const $btnMinus = $('#btn-minus');
+
+            // Variabel State
+            let isAutomatic = false;
+            let pumpStatus = 'mati';
+            let temperatureThreshold = 25.0;
+            let first = true;
+            let notification = false;
+
+            const status = '{{ $pompaStatus->status }}';
+            const otomatis = '{{ $pompaStatus->otomatis }}';
+
+            const suhu = '{{ $pompaStatus->suhu }}';
+
+            // Dataabse
+            // Sistem Otomatisasi
+            if (status === 'nyala') {
+                pumpStatus = 'nyala';
+                if (otomatis == false) {
+                    $('#pump-switch').prop('checked', true);
+                    $('#temperature-control, #status-pompa').hide();
+                    $('#automatic-switch').prop('checked', false);
+                } else {
+                    $('#pump-switch').prop('checked', false);
+                    $('#pump-control').hide();
+                    $('#automatic-switch').prop('checked', true);
+                }
+            } else {
+                pumpStatus = 'mati';
+                if (otomatis == true) {
+                    $('#pump-switch').prop('checked', false);
+                    $('#pump-control').hide();
+                } else {
+                    $('#temperature-control, #status-pompa').hide();
+                }
+            }
+
+            $('#temperature-input').val(suhu || 0);
+            checkTemperature();
+
+            // Fungsi: Validasi Input Suhu
+            function validateTemperatureInput() {
+                const currentValue = parseInt($inputNumber.val()) || 0;
+                const maxValue = parseInt($inputNumber.attr('max')) || 100;
+                const minValue = parseInt($inputNumber.attr('min')) || 0;
+                if (currentValue > maxValue) $inputNumber.val(maxValue);
+                if (currentValue < minValue) $inputNumber.val(minValue);
+            }
+
+            // Event Input Suhu
+            $inputNumber.on('input', validateTemperatureInput);
+
+            // Tombol Plus/Minus
+            $btnPlus.on('click', function() {
+                const step = parseInt($inputNumber.attr('step')) || 1;
+                $inputNumber.val((parseInt($inputNumber.val()) || 0) + step);
+                checkTemperature();
+            });
+
+            $btnMinus.on('click', function() {
+                const step = parseInt($inputNumber.attr('step')) || 1;
+                $inputNumber.val((parseInt($inputNumber.val()) || 0) - step);
+                checkTemperature();
+            });
+
+            // Fungsi: Update Visibilitas Kontrol
+            function updateVisibility() {
+                if ($('#automatic-switch').is(':checked')) {
+                    $('#pump-control').slideUp();
+                    $('#temperature-control, #status-pompa').slideDown();
+                    isAutomatic = true;
+                } else {
+                    $('#pump-control').slideDown();
+                    $('#temperature-control, #status-pompa').slideUp();
+                    isAutomatic = false;
+                    pumpStatus = 'mati';
+                }
+
+                if ($('#pump-switch').is(':checked') && !$('#automatic-switch').is(':checked')) {
+                    $('#automatic-switch').prop('disabled', true);
+                    pumpStatus = 'nyala';
+                    isAutomatic = false;
+                    sendPompaStatus(pumpStatus, isAutomatic);
+                } else if (!$('#pump-switch').is(':checked') && !$('#automatic-switch').is(':checked')) {
+                    $('#automatic-switch').prop('disabled', false);
+                    pumpStatus = 'mati';
+                    isAutomatic = false;
+                    sendPompaStatus(pumpStatus, isAutomatic);
+                }
+
+                // Buat disable tombol setelah perubahan selama 20 detik
+                $('#pump-switch, #automatic-switch').prop('disabled', true); // Disable dulu
+                setTimeout(function() {
+                    $('#pump-switch, #automatic-switch').prop('disabled',
+                        false); // Enable lagi setelah 20 detik
+                }, 20000); // 20000 ms = 20 detik
+                checkTemperature();
+            }
+
+            // Event Switch Otomatis dan Manual
+            $('#automatic-switch').change(updateVisibility);
+            $('#pump-switch').change(updateVisibility);
+            $('#temperature-input').change(updateVisibility);
+
+            // Fungsi: Periksa Suhu dan Otomatisasi
+            function checkTemperature(sendmqtt = true) {
+                let temperatureUser = parseFloat($inputNumber.val()) || 25.0;
+
+                if ($('#automatic-switch').is(':checked')) {
+                    if (temperatureThreshold >= temperatureUser) {
+                        isAutomatic = true;
+                        pumpStatus = 'nyala';
+                        notification = false;
+                    } else if (temperatureThreshold < temperatureUser) {
+                        isAutomatic = true;
+                        pumpStatus = 'mati';
+                        notification = false;
+                    }
+
+                    if (sendmqtt) {
+                        sendPompaStatus(pumpStatus, isAutomatic);
+                    }
+                }
+
+                updatePumpStatus(pumpStatus);
+            }
+
+            // Fungsi: Kirim Status Pompa
+            function sendPompaStatus(status, otomatis = false) {
+                updatePumpStatus(status);
+
+                console.log("Menutup Worker EventSource");
+                stopSSEWorker();
+
+                console.log("Mengirim permintaan AJAX");
+                $.ajax({
+                    url: '{{ route('api.post.pompa') }}',
+                    type: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        status: status,
+                        otomatis: otomatis,
+                        suhu: $('#temperature-input').val()
+                    },
+                    beforeSend: function() {
+                        if (notification) {
+                            let loadingMessage = status === 'nyala' ? 'Menyalakan' : 'Mematikan';
+                            alert.fire({
+                                icon: 'info',
+                                title: loadingMessage + ' Pompa...',
+                                timer: 30000,
+                                showConfirmButton: false,
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                },
+                            });
+                        } else {
+                            notification = true
+                        }
+                    },
+                    success: function(response) {
+                        // Buka kembali worker event source setelah AJAX berhasil
+                        startSSEWorker();
+                        let successMessage = status === 'nyala' ? 'Pompa Menyala!' : 'Pompa Mati!';
+
+                        // Tambahkan penundaan 15 detik sebelum menampilkan notifikasi sukses
+                        setTimeout(function() {
+                            alert.fire({
+                                icon: 'success',
+                                title: successMessage
+                            });
+                        }, 15000); // 15000 ms = 15 detik
+                    },
+                    error: function(response) {
+                        alert.fire({
+                            icon: 'error',
+                            title: 'Gagal mengirim perintah ke API!'
+                        });
+                        // Buka kembali worker event source meskipun terjadi error
+                        startSSEWorker();
+                        // window.eventSource = new EventSource("{{ route('api.admin.get.sse') }}");
+                    }
+                });
+            }
+
+            // Fungsi: Update Status Pompa
+            function updatePumpStatus(status) {
+                const $statusText = $('#pump-status-text');
+                if (status === 'nyala') {
+                    $statusText.html(
+                        'Menyala&nbsp;&nbsp; <i class="fa fa-circle green-shadow"></i>'
+                    );
+                } else {
+                    $statusText.html(
+                        'Mati&nbsp;&nbsp; <i class="fa fa-circle red-shadow"></i>'
+                    );
+                }
+            }
+
             // MQTT Udara
-            function updateTemperatureHumidity(temperature, humidity) {
+
+            function updateTemperatureHumidity(temperature, humidity, sendmqtt = true) {
                 var displayElement = $("#temperature-humidity-display");
                 var currentText = displayElement.html().split("<br>");
 
@@ -273,18 +550,24 @@
                 var currentHumidity = parseInt(currentText[1]) || 0;
 
                 if (temperature !== null) {
-                    currentTemperature = temperature + '° C';
-                } else {
-                    currentTemperature = currentTemperature + '° C';
+                    if (currentTemperature !== temperature) {
+                        currentTemperature = temperature;
+                        displayElement.html(currentTemperature + '° C<br>' + currentHumidity + '%');
+                    }
                 }
 
                 if (humidity !== null) {
-                    currentHumidity = humidity + '%';
-                } else {
-                    currentHumidity = currentHumidity + '%';
+                    if (currentHumidity !== humidity) {
+                        currentHumidity = humidity;
+                        displayElement.html(currentTemperature + '° C<br>' + currentHumidity + '%');
+                    }
                 }
 
-                displayElement.html(currentTemperature + "<br>" + currentHumidity);
+                temperatureThreshold = parseFloat(temperature);
+
+                if (sendmqtt) {
+                    checkTemperature();
+                }
             }
 
             // MQTT Status
@@ -456,19 +739,18 @@
             }
 
             function startSSEWorker() {
-                initSSEWorker();
+                initSSEWorker(); // pastikan worker sudah ada
                 sseWorker.postMessage({
                     type: 'start',
-                    originRoute: "{{ route('api.get.sse') }}"
+                    originRoute: "{{ route('api.admin.get.sse') }}"
                 });
             }
 
-            function terminateSSEWorker() {
+            function stopSSEWorker() {
                 if (sseWorker) {
                     sseWorker.postMessage({
-                        type: 'terminate'
+                        type: 'stop'
                     });
-                    sseWorker = null;
                 }
             }
 
@@ -493,6 +775,18 @@
                         updateTDS(parsedData.tds || 0);
                         updateStatus(parsedData.status_sensor, parsedData.status_relay);
 
+                        if ($('#temperature-input').val() != (parsedData.suhu_pompa ?? 0)) {
+                            $('#temperature-input').val(parsedData.suhu_pompa ?? 0);
+                        }
+
+                        if (!$('#automatic-switch').is(':checked')) {
+                            $('#automatic-switch').prop('checked', parsedData.otomatis == 1);
+                        }
+
+                        if (!$('#pump-switch').is(':checked')) {
+                            $('#pump-switch').prop('checked', parsedData.status_pompa == 1);
+                        }
+
                         window.myGauge.data.datasets[0].value = parsedData.arusAir || 0;
                         window.myGauge.update();
 
@@ -510,7 +804,7 @@
 
             // Stop Worker saat halaman di unload
             window.addEventListener("beforeunload", () => {
-                terminateSSEWorker();
+                stopSSEWorker();
             });
         });
     </script>

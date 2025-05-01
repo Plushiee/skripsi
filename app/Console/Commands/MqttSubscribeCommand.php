@@ -49,7 +49,6 @@ class MqttSubscribeCommand extends Command
         parent::__construct();
     }
 
-    // Implementasi logika untuk berlangganan ke topik MQTT
     public function handle()
     {
         while (true) {
@@ -75,8 +74,8 @@ class MqttSubscribeCommand extends Command
                 ];
 
                 foreach ($topics as $topic) {
-                    $mqtt->subscribe($topic, function (string $topic, string $message) {
-                        $this->handleMessage($topic, $message);
+                    $mqtt->subscribe($topic, function (string $topic, string $message) use ($mqtt) {
+                        $this->handleMessage($topic, $message, $mqtt);
                     }, 0);
                 }
 
@@ -92,7 +91,7 @@ class MqttSubscribeCommand extends Command
     }
 
     // Fungsi Handle message yang masuk
-    protected function handleMessage($topic, $message)
+    protected function handleMessage($topic, $message, $mqtt)
     {
         match ($topic) {
             '72210456/waterflow' => $this->koleksiData['arusAir'] = $message,
@@ -105,7 +104,6 @@ class MqttSubscribeCommand extends Command
             default => null,
         };
 
-        //  Kirim ke cache jika semua data telah diterima
         if ($this->isAllDataCollected()) {
             cache()->put('sse-update-event', $this->koleksiData, now()->addSeconds(5));
             $this->resetkoleksiData();
@@ -113,7 +111,7 @@ class MqttSubscribeCommand extends Command
 
 
         // Simpan ke database sesuai topik
-        $this->saveToDatabase($topic, $message);
+        $this->saveToDatabase($topic, $message, $mqtt);
     }
 
     // Fungsi untuk memeriksa apakah semua data telah terkumpul
@@ -130,7 +128,6 @@ class MqttSubscribeCommand extends Command
         );
     }
 
-    // Fungsi untuk mereset data yang dikumpulkan
     protected function resetkoleksiData()
     {
         $this->koleksiData = [
@@ -146,8 +143,7 @@ class MqttSubscribeCommand extends Command
         ];
     }
 
-    // Fungsi menyimpan data ke database
-    protected function saveToDatabase($topic, $message)
+    protected function saveToDatabase($topic, $message, $mqtt = null)
     {
         switch ($topic) {
             case '72210456/waterflow':
@@ -224,20 +220,20 @@ class MqttSubscribeCommand extends Command
                 break;
             case '72210456/pump_relay':
                 $lastRecord = TabelPompaModel::latest('created_at')->first();
-                $isDifferent = !$lastRecord || $lastRecord->status != $message;
+                $isDifferent = !$lastRecord || $lastRecord->status != $message && $lastRecord->otomatis == 0;
                 if ($isDifferent) {
-                    TabelPompaModel::create(['id_area' => 1, 'status' => $message, 'otomatis' => $lastRecord->otomatis ?? 0, 'suhu' => $lastRecord->suhu ?? null]);
+                    // Set otomatis ke 0 saat kontrol manual
+                    TabelPompaModel::create(['id_area' => 1, 'status' => $message, 'otomatis' => 0, 'suhu' => $lastRecord->suhu]);
                 }
+                $mqtt->publish('72210456/pump', $message, 0);
                 break;
             case '72210456/dump':
                 break;
         }
     }
 
-    // fungsi menyimpan data suhu dan kelembaban dalam satu Tabel
     protected function storeTempHumData()
     {
-        // Menyimpan data suhu dan kelembapan ke dalam array
         if ($this->tempHumData['temperature'] !== null) {
             $this->temperatureData[] = $this->tempHumData['temperature'];
         }

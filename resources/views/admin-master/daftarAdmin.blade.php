@@ -427,13 +427,31 @@
                             return false;
                         }
 
-                        const jamMulai = $('#jam-mulai').val();
-                        const jamSelesai = $('#jam-selesai').val();
+                        const startTime = $('#jam-mulai').val();
+                        const endTime = $('#jam-selesai').val();
 
-                        if (jamMulai && jamSelesai && jamMulai >= jamSelesai) {
-                            Swal.showValidationMessage(
-                                'Jam mulai harus lebih kecil dari jam selesai!');
-                            return false;
+                        if (startTime && endTime) {
+                            const [startHour, startMin] = startTime.split(':').map(Number);
+                            const [endHour, endMin] = endTime.split(':').map(Number);
+
+                            const startDate = new Date(0, 0, 0, startHour, startMin);
+                            const endDate = new Date(0, 0, 0, endHour, endMin);
+
+                            let duration = (endDate - startDate) / (1000 * 60 * 60);
+
+                            if (duration <= 0) {
+                                Swal.showValidationMessage(
+                                    'Jam selesai tidak boleh lebih awal atau sama dengan jam mulai !'
+                                );
+                                return false;
+                            }
+
+                            if (duration > 24) {
+                                Swal.showValidationMessage(
+                                    'Jam jaga tidak boleh lebih dari 24 jam !'
+                                );
+                                return false;
+                            }
                         }
 
                         return formData;
@@ -922,6 +940,31 @@
                             });
                             return false;
                         }
+
+                        if (startTime && endTime) {
+                            const [startHour, startMin] = startTime.split(':').map(Number);
+                            const [endHour, endMin] = endTime.split(':').map(Number);
+
+                            const startDate = new Date(0, 0, 0, startHour, startMin);
+                            const endDate = new Date(0, 0, 0, endHour, endMin);
+
+                            let duration = (endDate - startDate) / (1000 * 60 * 60);
+
+                            if (duration <= 0) {
+                                Swal.showValidationMessage(
+                                    'Jam selesai tidak boleh lebih awal atau sama dengan jam mulai !'
+                                );
+                                return false;
+                            }
+
+                            if (duration > 24) {
+                                Swal.showValidationMessage(
+                                    'Jam jaga tidak boleh lebih dari 24 jam !'
+                                );
+                                return false;
+                            }
+                        }
+
 
                         return {
                             start: startTime,

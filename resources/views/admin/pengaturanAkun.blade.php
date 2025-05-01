@@ -37,8 +37,8 @@
                 <div class="card-body p-4">
                     <div class="row">
                         <div class="col-12 col-sm-3 col-xxl-4 mb-2 mb-sm-0 text-center">
-                            <img src="" alt="placeholder image" class="img-fluid" id="photo"
-                                style="width: 190px; height: 210px; border-radius: 10px;" />
+                            <img src="" alt="placeholder image" class="img-fluid"
+                                id="photo" style="width: 190px; height: 210px; border-radius: 10px;" />
                         </div>
 
                         <div class="col-12 col-sm-9 col-xxl-8">
@@ -155,7 +155,7 @@
                     id: {{ Auth::user()->id }},
                 },
                 success: function(response) {
-                    $('#photo').attr('src', response.image);
+                    $('#photo').attr('src', response.image ?? asset('main/img/default-avatar.jpg') );
                 },
                 error: function(xhr) {
                     alert.fire({
@@ -401,7 +401,8 @@
                         function(xhr) {
                             alert.fire({
                                 icon: 'error',
-                                title: xhr.responseJSON?.message || xhr.responseJSON?.messages ||
+                                title: xhr.responseJSON?.message || xhr.responseJSON
+                                    ?.messages ||
                                     'Error tidak diketahui.',
                             });
                         }

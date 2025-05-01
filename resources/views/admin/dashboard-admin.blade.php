@@ -348,13 +348,14 @@
             let temperatureThreshold = 25.0;
             let first = true;
             let notification = false;
+            let isUserInteracting = false;
+            let isProgrammaticChange = false;
+
 
             const status = '{{ $pompaStatus->status }}';
             const otomatis = '{{ $pompaStatus->otomatis }}';
-
             const suhu = '{{ $pompaStatus->suhu }}';
 
-            // Dataabse
             // Sistem Otomatisasi
             if (status === 'nyala') {
                 pumpStatus = 'nyala';
@@ -397,52 +398,103 @@
                 const step = parseInt($inputNumber.attr('step')) || 1;
                 $inputNumber.val((parseInt($inputNumber.val()) || 0) + step);
                 checkTemperature();
+
+                $('#pump-switch, #automatic-switch').prop('disabled', true);
+                setTimeout(function() {
+                    $('#pump-switch, #automatic-switch').prop(
+                        'disabled',
+                        false);
+                }, 5000);
             });
 
             $btnMinus.on('click', function() {
                 const step = parseInt($inputNumber.attr('step')) || 1;
                 $inputNumber.val((parseInt($inputNumber.val()) || 0) - step);
                 checkTemperature();
+
+                $('#pump-switch, #automatic-switch').prop('disabled', true);
+                setTimeout(function() {
+                    $('#pump-switch, #automatic-switch').prop(
+                        'disabled',
+                        false);
+                }, 5000);
             });
 
-            // Fungsi: Update Visibilitas Kontrol
-            function updateVisibility() {
+            // Fungsi Visibilitas Kontrol
+            function updateVisibility(notificationOtomatis = true) {
                 if ($('#automatic-switch').is(':checked')) {
                     $('#pump-control').slideUp();
                     $('#temperature-control, #status-pompa').slideDown();
                     isAutomatic = true;
+                    if (notificationOtomatis) {
+                        alert.fire({
+                            icon: 'info',
+                            title: 'Menyalakan Sistem Otomatis',
+                            timer: 17000,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+                    }
                 } else {
                     $('#pump-control').slideDown();
                     $('#temperature-control, #status-pompa').slideUp();
                     isAutomatic = false;
                     pumpStatus = 'mati';
+                    if (notificationOtomatis) {
+                        alert.fire({
+                            icon: 'info',
+                            title: 'Mematikan Sistem Otomatis',
+                            timer: 17000,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+                    };
                 }
 
                 if ($('#pump-switch').is(':checked') && !$('#automatic-switch').is(':checked')) {
                     $('#automatic-switch').prop('disabled', true);
                     pumpStatus = 'nyala';
                     isAutomatic = false;
+                    notification = true;
                     sendPompaStatus(pumpStatus, isAutomatic);
                 } else if (!$('#pump-switch').is(':checked') && !$('#automatic-switch').is(':checked')) {
                     $('#automatic-switch').prop('disabled', false);
                     pumpStatus = 'mati';
                     isAutomatic = false;
+                    notification = true;
                     sendPompaStatus(pumpStatus, isAutomatic);
                 }
 
-                // Buat disable tombol setelah perubahan selama 20 detik
-                $('#pump-switch, #automatic-switch').prop('disabled', true); // Disable dulu
+                // Buat disable tombol setelah perubahan selama 5 detik
+                $('#pump-switch, #automatic-switch').prop('disabled', true);
                 setTimeout(function() {
-                    $('#pump-switch, #automatic-switch').prop('disabled',
-                        false); // Enable lagi setelah 20 detik
-                }, 20000); // 20000 ms = 20 detik
+                    $('#pump-switch, #automatic-switch').prop(
+                        'disabled',
+                        false);
+                }, 5000);
                 checkTemperature();
             }
 
             // Event Switch Otomatis dan Manual
             $('#automatic-switch').change(updateVisibility);
             $('#pump-switch').change(updateVisibility);
-            $('#temperature-input').change(updateVisibility);
+            $('#temperature-input').change(function() {
+                updateVisibility(false);
+            });
+
+            $('#automatic-switch, #pump-switch, #temperature-input').on('input change', function() {
+                if (isProgrammaticChange) return;
+
+                isUserInteracting = true;
+
+                clearTimeout(window.userInteractTimeout);
+                window.userInteractTimeout = setTimeout(() => {
+                    isUserInteracting = false;
+                }, 3000);
+            });
+
 
             // Fungsi: Periksa Suhu dan Otomatisasi
             function checkTemperature(sendmqtt = true) {
@@ -452,12 +504,12 @@
                     if (temperatureThreshold >= temperatureUser) {
                         isAutomatic = true;
                         pumpStatus = 'nyala';
-                        notification = false;
                     } else if (temperatureThreshold < temperatureUser) {
                         isAutomatic = true;
                         pumpStatus = 'mati';
-                        notification = false;
                     }
+
+                    notification = false;
 
                     if (sendmqtt) {
                         sendPompaStatus(pumpStatus, isAutomatic);
@@ -470,78 +522,79 @@
             // Fungsi: Kirim Status Pompa
             function sendPompaStatus(status, otomatis = false) {
                 updatePumpStatus(status);
-
-                console.log("Menutup Worker EventSource");
                 stopSSEWorker();
 
-                console.log("Mengirim permintaan AJAX");
-                $.ajax({
-                    url: '{{ route('api.post.pompa') }}',
-                    type: 'POST',
-                    data: {
-                        _token: '{{ csrf_token() }}',
-                        status: status,
-                        otomatis: otomatis,
-                        suhu: $('#temperature-input').val()
-                    },
-                    beforeSend: function() {
-                        if (notification) {
-                            let loadingMessage = status === 'nyala' ? 'Menyalakan' : 'Mematikan';
-                            alert.fire({
-                                icon: 'info',
-                                title: loadingMessage + ' Pompa...',
-                                timer: 30000,
-                                showConfirmButton: false,
-                                allowOutsideClick: false,
-                                didOpen: () => {
-                                    Swal.showLoading();
-                                },
-                            });
-                        } else {
-                            notification = true
-                        }
-                    },
-                    success: function(response) {
-                        // Buka kembali worker event source setelah AJAX berhasil
-                        startSSEWorker();
-                        let successMessage = status === 'nyala' ? 'Pompa Menyala!' : 'Pompa Mati!';
+                let loadingMessage = status === 'nyala' ? 'Menyalakan' : 'Mematikan';
 
-                        // Tambahkan penundaan 15 detik sebelum menampilkan notifikasi sukses
-                        setTimeout(function() {
+                if (notification) {
+                    alert.fire({
+                        icon: 'info',
+                        title: loadingMessage + ' Pompa...',
+                        timer: 17000,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    // Buat promise penunda 15 detik
+                    const delay = new Promise(resolve => setTimeout(resolve, 17000));
+
+                    // Kirim AJAX (langsung)
+                    const ajaxRequest = $.ajax({
+                        url: '{{ route('api.post.pompa') }}',
+                        type: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            status: status,
+                            otomatis: otomatis,
+                            suhu: $('#temperature-input').val()
+                        }
+                    });
+
+                    // Tunggu keduanya: delay 15 detik & ajax selesai
+                    Promise.all([delay, ajaxRequest])
+                        .then(([_, response]) => {
+                            restartSSEWorker();
                             alert.fire({
                                 icon: 'success',
-                                title: successMessage
+                                title: status === 'nyala' ? 'Pompa Menyala!' : 'Pompa Mati!',
+                                timer: 2500,
+                                showConfirmButton: false
                             });
-                        }, 15000); // 15000 ms = 15 detik
-                    },
-                    error: function(response) {
-                        alert.fire({
-                            icon: 'error',
-                            title: 'Gagal mengirim perintah ke API!'
+                        })
+                        .catch(() => {
+                            restartSSEWorker();
+                            alert.fire({
+                                icon: 'error',
+                                title: 'Gagal mengirim perintah ke API!',
+                                timer: 2500,
+                                showConfirmButton: false
+                            });
                         });
-                        // Buka kembali worker event source meskipun terjadi error
-                        startSSEWorker();
-                        // window.eventSource = new EventSource("{{ route('api.admin.get.sse') }}");
-                    }
-                });
-            }
-
-            // Fungsi: Update Status Pompa
-            function updatePumpStatus(status) {
-                const $statusText = $('#pump-status-text');
-                if (status === 'nyala') {
-                    $statusText.html(
-                        'Menyala&nbsp;&nbsp; <i class="fa fa-circle green-shadow"></i>'
-                    );
                 } else {
-                    $statusText.html(
-                        'Mati&nbsp;&nbsp; <i class="fa fa-circle red-shadow"></i>'
-                    );
+                    $.ajax({
+                        url: '{{ route('api.post.pompa') }}',
+                        type: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            status: status,
+                            otomatis: otomatis,
+                            suhu: $('#temperature-input').val()
+                        },
+                        beforeSend: function() {
+                            notification = true;
+                        },
+                        success: function(response) {
+                            restartSSEWorker();
+                        },
+                        error: function(response) {
+                            restartSSEWorker();
+                        }
+                    });
                 }
             }
 
             // MQTT Udara
-
             function updateTemperatureHumidity(temperature, humidity, sendmqtt = true) {
                 var displayElement = $("#temperature-humidity-display");
                 var currentText = displayElement.html().split("<br>");
@@ -570,6 +623,35 @@
                 }
             }
 
+            // MQTT Volume
+            function updateVolume(tinggi) {
+                var displayElement = $("#volume-display");
+                let l_alas = 3.14 * (20 / 2) ** 2;
+                let volume = l_alas * tinggi;
+                let volumeInLiters = volume / 1000;
+                displayElement.html(volumeInLiters.toFixed(2));
+            }
+
+            // MQTT TDS
+            function updateTDS(tds) {
+                var displayElement = $("#ppm-display");
+                displayElement.html(tds);
+            }
+
+            // MQTT Update Status Pompa
+            function updatePumpStatus(status) {
+                const $statusText = $('#pump-status-text');
+                if (status === 'nyala') {
+                    $statusText.html(
+                        'Menyala&nbsp;&nbsp; <i class="fa fa-circle green-shadow"></i>'
+                    );
+                } else {
+                    $statusText.html(
+                        'Mati&nbsp;&nbsp; <i class="fa fa-circle red-shadow"></i>'
+                    );
+                }
+            }
+
             // MQTT Status
             function updateStatus(status_sensor, status_relay) {
                 var displayElement = $("#status");
@@ -590,21 +672,6 @@
                         "<i class='fa fa-circle red-shadow mb-4' aria-hidden='true' id='iot-status-icon'></i><br>OFFLINE"
                     );
                 }
-            }
-
-            // MQTT Volume
-            function updateVolume(tinggi) {
-                var displayElement = $("#volume-display");
-                let l_alas = 3.14 * (20 / 2) ** 2;
-                let volume = l_alas * tinggi;
-                let volumeInLiters = volume / 1000;
-                displayElement.html(volumeInLiters.toFixed(2));
-            }
-
-            // MQTT TDS
-            function updateTDS(tds) {
-                var displayElement = $("#ppm-display");
-                displayElement.html(tds);
             }
 
             // Script untuk Fluid Meter
@@ -676,7 +743,8 @@
                 }
             };
             var ctx = document.getElementById('chart').getContext('2d');
-            window.myGauge = new Chart(ctx, config);
+            window.myGauge = new Chart(ctx,
+                config);
 
             setInterval(() => {
                 const now = new Date();
@@ -739,7 +807,7 @@
             }
 
             function startSSEWorker() {
-                initSSEWorker(); // pastikan worker sudah ada
+                initSSEWorker();
                 sseWorker.postMessage({
                     type: 'start',
                     originRoute: "{{ route('api.admin.get.sse') }}"
@@ -753,6 +821,24 @@
                     });
                 }
             }
+
+            function terminateSSEWorker() {
+                if (sseWorker) {
+                    sseWorker.postMessage({
+                        type: 'terminate'
+                    });
+                    sseWorker = null;
+                }
+            }
+
+            function restartSSEWorker() {
+                if (sseWorker) {
+                    sseWorker.terminate();
+                    sseWorker = null;
+                }
+                startSSEWorker();
+            }
+
 
             // Mulai Worker
             startSSEWorker();
@@ -769,11 +855,13 @@
                     try {
                         const parsedData = JSON.parse(data);
 
-                        updateTemperatureHumidity(parsedData.tempHum?.temperature ?? null, parsedData.tempHum
+                        updateTemperatureHumidity(parsedData.tempHum?.temperature ?? null, parsedData
+                            .tempHum
                             ?.humidity ?? null, false);
                         updateVolume(parsedData.arusAir || 0);
                         updateTDS(parsedData.tds || 0);
                         updateStatus(parsedData.status_sensor, parsedData.status_relay);
+
 
                         if ($('#temperature-input').val() != (parsedData.suhu_pompa ?? 0)) {
                             $('#temperature-input').val(parsedData.suhu_pompa ?? 0);
@@ -802,9 +890,17 @@
                 }
             };
 
+            sseWorker.onerror = (e) => {
+                console.error("SSE Worker error:", e);
+            };
+
+            sseWorker.onmessageerror = (e) => {
+                console.error("SSE Worker message error:", e);
+            };
+
             // Stop Worker saat halaman di unload
             window.addEventListener("beforeunload", () => {
-                stopSSEWorker();
+                terminateSSEWorker();
             });
         });
     </script>

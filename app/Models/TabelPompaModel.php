@@ -10,6 +10,9 @@ class TabelPompaModel extends Model
     use HasFactory;
 
     protected $table = 'pompa';
+
+    protected $primaryKey = 'id';
+    public $incrementing = true;
     protected $fillable = [
         'id_area',
         'status',

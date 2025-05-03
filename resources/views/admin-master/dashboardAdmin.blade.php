@@ -776,7 +776,7 @@
                 })
                 .catch(error => console.error('Error fetching weather data:', error));
 
-            // EventSource (SSE) with Throttling by Worker
+            // EventSource (SSE) by Worker
             var sseWorker = null;
 
             function initSSEWorker() {

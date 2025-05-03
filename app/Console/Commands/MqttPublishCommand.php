@@ -14,8 +14,6 @@ class MqttPublishCommand extends Command
     protected $signature = 'mqtt:publish';
     protected $description = 'Mengirimkan status pompa via MQTT setiap 5 detik';
 
-    protected $counter = 0;
-
     protected $lastPublishedStatus = null;
 
     public function handle()
@@ -23,7 +21,6 @@ class MqttPublishCommand extends Command
         while (true) {
             try {
                 $mqtt = $this->connectToMqtt();
-                $this->counter++;
                 $this->publishDumpData($mqtt);
 
                 $pompa = TabelPompaModel::orderByDesc('id')->first();

@@ -13,7 +13,7 @@
             <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
         </ol>
     </nav>
-1    <div class="row mb-2">
+    <div class="row mb-2">
         <div id="carouselExampleControls" class="carousel slide" data-bs-ride="carousel">
             <div class="carousel-inner carousel-inner-card py-0 px-4" style="height: 195px">
                 <!-- Slide 1 -->

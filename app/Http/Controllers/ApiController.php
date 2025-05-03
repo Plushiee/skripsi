@@ -293,7 +293,13 @@ class ApiController extends Controller
         ]);
 
         $lastPompa =  TabelPompaModel::orderByDesc('id')->first();
-        $isdifferent = $lastPompa->status != $request->input('status') && $lastPompa->otomatis != $request->input('status') || $request->boolean('otomatis', false) != $lastPompa->otomatis;
+        $requestedStatus = $request->input('status');
+        $requestedOtomatis = $request->boolean('otomatis', false);
+
+        $isdifferent =
+            $lastPompa->status !== $requestedStatus ||
+            $lastPompa->otomatis !== $requestedOtomatis ||
+            $lastPompa->suhu != $request->input('suhu');
 
         if ($isdifferent) {
             $pompa = new TabelPompaModel();

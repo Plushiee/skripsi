@@ -105,6 +105,7 @@ class MqttSubscribeCommand extends Command
         };
 
         if ($this->isAllDataCollected()) {
+            // echo "Data terkumpul: " . json_encode($this->koleksiData) . "\n";
             cache()->put('sse-update-event', $this->koleksiData, now()->addSeconds(5));
             $this->resetkoleksiData();
         }

@@ -427,33 +427,50 @@
 
             // EventSource (SSE) by Worker
             var sseWorker = null;
+            let lastSSEData = null;
 
             function initSSEWorker() {
                 if (!sseWorker) {
                     sseWorker = new Worker("{{ asset('main/js/sse-worker.js') }}");
 
-                    sseWorker.onmessage = (event) => {
+                    // Handle pesan dari Worker
+                    sseWorker.onmessage = (e) => {
                         const {
                             type,
                             data,
-                            message
-                        } = event.data;
+                            error
+                        } = e.data;
 
-                        if (type === 'data') {
-                            console.log("Data dari worker:", data);
-                            // Update UI dari sini
+                        if (type === 'message') {
+                            try {
+                                const parsedData = JSON.parse(data);
+                                lastSSEData = parsedData;
+                                updateUI(parsedData);
+                            } catch (error) {
+                                console.error("Error parsing SSE response from worker:", error);
+                            }
+
                         } else if (type === 'error') {
-                            console.error("SSE Error from worker:", message);
+                            console.error("SSE Worker error:", message);
                         } else if (type === 'open') {
-                            console.log("SSE connection opened via worker.");
+                            console.log("SSE connection established via Worker.");
                         }
-                    };
-
-                    sseWorker.onerror = (error) => {
-                        console.error("Worker error:", error);
                     };
                 }
             }
+
+            function updateUI(data) {
+                updateTemperatureHumidity(data.tempHum?.temperature ?? null, data.tempHum?.humidity ?? null, false);
+                updateVolume(data.arusAir || 0);
+                updateTDS(data.tds || 0);
+                updateStatus(data.status_sensor, data.status_relay);
+
+                window.myGauge.data.datasets[0].value = data.arusAir || 0;
+                window.myGauge.update();
+
+                fm.setPercentage(data.ping || 0);
+            }
+
 
             function startSSEWorker() {
                 initSSEWorker();
@@ -461,6 +478,14 @@
                     type: 'start',
                     originRoute: "{{ route('api.get.sse') }}"
                 });
+            }
+
+            function stopSSEWorker() {
+                if (sseWorker) {
+                    sseWorker.postMessage({
+                        type: 'stop'
+                    });
+                }
             }
 
             function terminateSSEWorker() {
@@ -475,37 +500,12 @@
             // Mulai Worker
             startSSEWorker();
 
-            // Handle pesan dari Worker
-            sseWorker.onmessage = (e) => {
-                const {
-                    type,
-                    data,
-                    error
-                } = e.data;
+            sseWorker.onerror = (e) => {
+                console.error("SSE Worker error:", e);
+            };
 
-                if (type === 'message') {
-                    try {
-                        const parsedData = JSON.parse(data);
-
-                        updateTemperatureHumidity(parsedData.tempHum?.temperature ?? null, parsedData.tempHum
-                            ?.humidity ?? null, false);
-                        updateVolume(parsedData.arusAir || 0);
-                        updateTDS(parsedData.tds || 0);
-                        updateStatus(parsedData.status_sensor, parsedData.status_relay);
-
-                        window.myGauge.data.datasets[0].value = parsedData.arusAir || 0;
-                        window.myGauge.update();
-
-                        fm.setPercentage(parsedData.ping || 0);
-
-                    } catch (error) {
-                        console.error("Error parsing SSE response from worker:", error);
-                    }
-                } else if (type === 'error') {
-                    console.error("SSE Worker error:", message);
-                } else if (type === 'open') {
-                    console.log("SSE connection established via Worker.");
-                }
+            sseWorker.onmessageerror = (e) => {
+                console.error("SSE Worker message error:", e);
             };
 
             // Stop Worker saat halaman di unload

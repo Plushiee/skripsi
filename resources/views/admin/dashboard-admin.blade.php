@@ -349,8 +349,6 @@
             let first = true;
             let notification = false;
             let isUserInteracting = false;
-            let isProgrammaticChange = false;
-
 
             const status = '{{ $pompaStatus->status }}';
             const otomatis = '{{ $pompaStatus->otomatis }}';
@@ -399,6 +397,8 @@
                 $inputNumber.val((parseInt($inputNumber.val()) || 0) + step);
                 checkTemperature();
 
+                isUserInteracting = true;
+
                 $('#pump-switch, #automatic-switch').prop('disabled', true);
                 setTimeout(function() {
                     $('#pump-switch, #automatic-switch').prop(
@@ -411,6 +411,8 @@
                 const step = parseInt($inputNumber.attr('step')) || 1;
                 $inputNumber.val((parseInt($inputNumber.val()) || 0) - step);
                 checkTemperature();
+
+                isUserInteracting = true;
 
                 $('#pump-switch, #automatic-switch').prop('disabled', true);
                 setTimeout(function() {
@@ -484,17 +486,13 @@
                 updateVisibility(false);
             });
 
-            $('#automatic-switch, #pump-switch, #temperature-input').on('input change', function() {
-                if (isProgrammaticChange) return;
-
+            $('#temperature-input').on('focusin', function() {
                 isUserInteracting = true;
-
-                clearTimeout(window.userInteractTimeout);
-                window.userInteractTimeout = setTimeout(() => {
-                    isUserInteracting = false;
-                }, 3000);
             });
 
+            $('#temperature-input').on('focusout', function() {
+                isUserInteracting = false;
+            });
 
             // Fungsi: Periksa Suhu dan Otomatisasi
             function checkTemperature(sendmqtt = true) {
@@ -559,8 +557,8 @@
                                 icon: 'success',
                                 title: status === 'nyala' ? 'Pompa Menyala!' : 'Pompa Mati!',
                                 timer: 2500,
-                                showConfirmButton: false
                             });
+                            isUserInteractingBtn = false;
                         })
                         .catch(() => {
                             restartSSEWorker();
@@ -568,8 +566,8 @@
                                 icon: 'error',
                                 title: 'Gagal mengirim perintah ke API!',
                                 timer: 2500,
-                                showConfirmButton: false
                             });
+                            isUserInteractingBtn = false;
                         });
                 } else {
                     $.ajax({
@@ -586,9 +584,11 @@
                         },
                         success: function(response) {
                             restartSSEWorker();
+                            isUserInteractingBtn = false;
                         },
                         error: function(response) {
                             restartSSEWorker();
+                            isUserInteractingBtn = false;
                         }
                     });
                 }
@@ -776,35 +776,61 @@
                 })
                 .catch(error => console.error('Error fetching weather data:', error));
 
-            // EventSource (SSE) with Throttling by Worker
+            // EventSource (SSE) by Worker
             var sseWorker = null;
+            let lastSSEData = null;
 
             function initSSEWorker() {
                 if (!sseWorker) {
                     sseWorker = new Worker("{{ asset('main/js/sse-worker.js') }}");
 
-                    sseWorker.onmessage = (event) => {
+                    // Handle pesan dari Worker
+                    sseWorker.onmessage = (e) => {
                         const {
                             type,
                             data,
-                            message
-                        } = event.data;
+                            error
+                        } = e.data;
 
-                        if (type === 'data') {
-                            console.log("Data dari worker:", data);
-                            // Update UI dari sini
+                        if (type === 'message') {
+                            try {
+                                const parsedData = JSON.parse(data);
+                                lastSSEData = parsedData;
+                                updateUI(parsedData);
+                            } catch (error) {
+                                console.error("Error parsing SSE response from worker:", error);
+                            }
+
                         } else if (type === 'error') {
-                            console.error("SSE Error from worker:", message);
+                            console.error("SSE Worker error:", message);
                         } else if (type === 'open') {
-                            console.log("SSE connection opened via worker.");
+                            console.log("SSE connection established via Worker.");
                         }
-                    };
-
-                    sseWorker.onerror = (error) => {
-                        console.error("Worker error:", error);
                     };
                 }
             }
+
+            function updateUI(data) {
+                updateTemperatureHumidity(data.tempHum?.temperature ?? null, data.tempHum?.humidity ?? null, false);
+                updateVolume(data.arusAir || 0);
+                updateTDS(data.tds || 0);
+                updateStatus(data.status_sensor, data.status_relay);
+
+                if (isUserInteracting === false) {
+                    if ($('#temperature-input').val() != (data.suhu_pompa ?? 0)) {
+                        $('#temperature-input').val(data.suhu_pompa ?? 0);
+                    }
+                }
+
+                $('#automatic-switch').prop('checked', data.otomatis_pompa == 1);
+                $('#pump-switch').prop('checked', data.status_pompa == 1);
+
+                window.myGauge.data.datasets[0].value = data.arusAir || 0;
+                window.myGauge.update();
+
+                fm.setPercentage(data.ping || 0);
+            }
+
 
             function startSSEWorker() {
                 initSSEWorker();
@@ -836,54 +862,16 @@
                     sseWorker.terminate();
                     sseWorker = null;
                 }
+
+                if (lastSSEData) {
+                    updateUI(lastSSEData);
+                }
+
                 startSSEWorker();
             }
 
-
             // Mulai Worker
             startSSEWorker();
-
-            // Handle pesan dari Worker
-            sseWorker.onmessage = (e) => {
-                const {
-                    type,
-                    data,
-                    error
-                } = e.data;
-
-                if (type === 'message') {
-                    try {
-                        const parsedData = JSON.parse(data);
-
-                        updateTemperatureHumidity(parsedData.tempHum?.temperature ?? null, parsedData
-                            .tempHum
-                            ?.humidity ?? null, false);
-                        updateVolume(parsedData.arusAir || 0);
-                        updateTDS(parsedData.tds || 0);
-                        updateStatus(parsedData.status_sensor, parsedData.status_relay);
-
-
-                        if ($('#temperature-input').val() != (parsedData.suhu_pompa ?? 0)) {
-                            $('#temperature-input').val(parsedData.suhu_pompa ?? 0);
-                        }
-
-                        $('#automatic-switch').prop('checked', parsedData.otomatis == 1);
-                        $('#pump-switch').prop('checked', parsedData.status_pompa == 1);
-
-                        window.myGauge.data.datasets[0].value = parsedData.arusAir || 0;
-                        window.myGauge.update();
-
-                        fm.setPercentage(parsedData.ping || 0);
-
-                    } catch (error) {
-                        console.error("Error parsing SSE response from worker:", error);
-                    }
-                } else if (type === 'error') {
-                    console.error("SSE Worker error:", message);
-                } else if (type === 'open') {
-                    console.log("SSE connection established via Worker.");
-                }
-            };
 
             sseWorker.onerror = (e) => {
                 console.error("SSE Worker error:", e);

@@ -62,7 +62,7 @@
                                     <h5 class="card-title mb-3">Status Mesin</h5>
                                     <div class="text-center my-4">
                                         <h4 id="status" class="text-center"><i class="fa fa-circle red-shadow mb-4"
-                                                aria-hidden="true" id="iot-status-icon"></i><br>OFFLINE</h4>
+                                                aria-hidden="true" id="iot-status-icon"></i><br>MATI</h4>
                                     </div>
                                 </div>
                             </div>
@@ -587,7 +587,7 @@
                     );
                 } else {
                     displayElement.html(
-                        "<i class='fa fa-circle red-shadow mb-4' aria-hidden='true' id='iot-status-icon'></i><br>OFFLINE"
+                        "<i class='fa fa-circle red-shadow mb-4' aria-hidden='true' id='iot-status-icon'></i><br>MATI"
                     );
                 }
             }

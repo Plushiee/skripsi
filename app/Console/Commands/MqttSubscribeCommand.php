@@ -51,9 +51,13 @@ class MqttSubscribeCommand extends Command
 
     public function handle()
     {
+        $mqtt = null;
+
         while (true) {
             try {
-                $mqtt = MQTT::connection('default');
+                if (!$mqtt || !$mqtt->isConnected()) {
+                    $mqtt = $this->connectToMqtt();
+                }
 
                 // Topic yang di subscribe
                 $topics = [
@@ -79,8 +83,11 @@ class MqttSubscribeCommand extends Command
                     }, 0);
                 }
 
-                $mqtt->loop(true);
-            }catch (MqttClientException $e) {
+                while (true) {
+                    $mqtt->loop(); // non-blocking
+                    usleep(100000); // 0.1 detik delay agar tidak 100% CPU
+                }
+            } catch (MqttClientException $e) {
                 Log::error("MQTT error: " . $e->getMessage());
                 sleep(4);
             }
@@ -105,13 +112,22 @@ class MqttSubscribeCommand extends Command
 
         if ($this->isAllDataCollected()) {
             // echo "Data terkumpul: " . json_encode($this->koleksiData) . "\n";
-            cache()->put('sse-update-event', $this->koleksiData, now()->addSeconds(5));
+            cache()->put('sse-update-event', $this->koleksiData, now()->addMinutes(3));
             $this->resetkoleksiData();
         }
 
 
         // Simpan ke database sesuai topik
         $this->saveToDatabase($topic, $message, $mqtt);
+    }
+
+    protected function connectToMqtt()
+    {
+        $mqtt = MQTT::connection('default');
+        if (!$mqtt->isConnected()) {
+            $mqtt->connect(null, true, ['keep_alive' => 60]);
+        }
+        return $mqtt;
     }
 
     // Fungsi untuk memeriksa apakah semua data telah terkumpul

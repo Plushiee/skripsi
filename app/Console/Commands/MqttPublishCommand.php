@@ -18,9 +18,14 @@ class MqttPublishCommand extends Command
 
     public function handle()
     {
+        $mqtt = null;
+
         while (true) {
             try {
-                $mqtt = $this->connectToMqtt();
+                if (!$mqtt || !$mqtt->isConnected()) {
+                    $mqtt = $this->connectToMqtt();
+                }
+
                 $this->publishDumpData($mqtt);
 
                 $pompa = TabelPompaModel::orderByDesc('id')->first();
@@ -28,12 +33,8 @@ class MqttPublishCommand extends Command
 
                 if ($pompa) {
                     if ($pompa->otomatis == 1) {
-                        if ($suhu) {
-                            if ($pompa->suhu < $suhu->temperature) {
-                                $this->publishPumpStatus($mqtt, 'nyala');
-                            } else {
-                                $this->publishPumpStatus($mqtt, 'mati');
-                            }
+                        if ($suhu && $pompa->suhu < $suhu->temperature) {
+                            $this->publishPumpStatus($mqtt, 'nyala');
                         } else {
                             $this->publishPumpStatus($mqtt, 'mati');
                         }
@@ -44,11 +45,17 @@ class MqttPublishCommand extends Command
 
                 sleep(3);
             } catch (MqttClientException $e) {
-                Log::error("MQTT error: " . $e->getMessage());
+                // Log::error("MQTT error: " . $e->getMessage());
+                $mqtt = null;
+                sleep(4);
+            } catch (\Throwable $e) {
+                // Log::error("Unexpected error: " . $e->getMessage());
+                $mqtt = null;
                 sleep(4);
             }
         }
     }
+
 
     protected function connectToMqtt()
     {

@@ -2,8 +2,8 @@
 :START
 echo Starting MQTT Publish...
 
-REM Pindah ke folder project Laravel
-cd /d C:\Users\admin.WIN-58L2N029HFC\Documents\GitHub\skripsi
+REM Pindah ke direktori tempat .bat ini berada
+cd /d %~dp0
 
 REM Jalankan perintah dan tangkap output error ke error.log
 php artisan mqtt:publish 2> error_publish.log

@@ -24,6 +24,11 @@ class MqttPublishCommand extends Command
             try {
                 if (!$mqtt || !$mqtt->isConnected()) {
                     $mqtt = $this->connectToMqtt();
+                    if (!$mqtt || !$mqtt->isConnected()) {
+                        Log::warning("MQTT disconnected. Reconnecting...");
+                        sleep(4);
+                        continue;
+                    }
                 }
 
                 $this->publishDumpData($mqtt);
@@ -61,11 +66,22 @@ class MqttPublishCommand extends Command
 
     protected function connectToMqtt()
     {
-        $mqtt = MQTT::connection('default');
-        if (!$mqtt->isConnected()) {
-            $mqtt->connect(null, true, ['keep_alive' => 60]);
+        try {
+            $mqtt = MQTT::connection('default');
+
+            if (!$mqtt->isConnected()) {
+                $mqtt->connect(null, true, ['keep_alive' => 60]);
+            }
+
+            if (!$mqtt->isConnected()) {
+                Log::warning("MQTT failed to connect after attempting.");
+            }
+
+            return $mqtt;
+        } catch (\Throwable $e) {
+            Log::error("MQTT connection error: " . $e->getMessage());
+            return null;
         }
-        return $mqtt;
     }
 
     protected function publishPumpStatus($mqtt, $status)

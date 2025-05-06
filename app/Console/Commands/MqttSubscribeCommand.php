@@ -57,6 +57,11 @@ class MqttSubscribeCommand extends Command
             try {
                 if (!$mqtt || !$mqtt->isConnected()) {
                     $mqtt = $this->connectToMqtt();
+                    if (!$mqtt || !$mqtt->isConnected()) {
+                        Log::warning("MQTT disconnected. Reconnecting...");
+                        sleep(4);
+                        continue;
+                    }
                 }
 
                 // Topic yang di subscribe
@@ -83,8 +88,10 @@ class MqttSubscribeCommand extends Command
                     }, 0);
                 }
 
-                $mqtt->loop(true);
-
+                while ($mqtt->isConnected()) {
+                    $mqtt->loop();
+                    usleep(100000); // 100ms untuk tidak membebani CPU
+                }
             } catch (MqttClientException $e) {
                 Log::error("MQTT error: " . $e->getMessage());
                 sleep(4);
@@ -122,12 +129,24 @@ class MqttSubscribeCommand extends Command
 
     protected function connectToMqtt()
     {
-        $mqtt = MQTT::connection('default');
-        if (!$mqtt->isConnected()) {
-            $mqtt->connect(null, true, ['keep_alive' => 60]);
+        try {
+            $mqtt = MQTT::connection('default');
+
+            if (!$mqtt->isConnected()) {
+                $mqtt->connect(null, true, ['keep_alive' => 60]);
+            }
+
+            if (!$mqtt->isConnected()) {
+                Log::warning("MQTT failed to connect after attempting.");
+            }
+
+            return $mqtt;
+        } catch (\Throwable $e) {
+            Log::error("MQTT connection error: " . $e->getMessage());
+            return null;
         }
-        return $mqtt;
     }
+
 
     // Fungsi untuk memeriksa apakah semua data telah terkumpul
     protected function isAllDataCollected()

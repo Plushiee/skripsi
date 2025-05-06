@@ -427,7 +427,6 @@
 
             // EventSource (SSE) by Worker
             var sseWorker = null;
-            let lastSSEData = null;
 
             function initSSEWorker() {
                 if (!sseWorker) {
@@ -444,7 +443,6 @@
                         if (type === 'message') {
                             try {
                                 const parsedData = JSON.parse(data);
-                                lastSSEData = parsedData;
                                 updateUI(parsedData);
                             } catch (error) {
                                 console.error("Error parsing SSE response from worker:", error);

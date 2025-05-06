@@ -534,7 +534,7 @@
                         }
                     });
 
-                    // Buat promise penunda 15 detik
+                    // Buat promise penunda
                     const delay = new Promise(resolve => setTimeout(resolve, 17000));
 
                     // Kirim AJAX (langsung)

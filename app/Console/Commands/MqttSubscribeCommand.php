@@ -83,13 +83,12 @@ class MqttSubscribeCommand extends Command
                     }, 0);
                 }
 
-                while (true) {
-                    $mqtt->loop(); // non-blocking
-                    usleep(100000); // 0.1 detik delay agar tidak 100% CPU
-                }
+                $mqtt->loop(true);
+
             } catch (MqttClientException $e) {
                 Log::error("MQTT error: " . $e->getMessage());
                 sleep(4);
+                continue;
             }
         }
 

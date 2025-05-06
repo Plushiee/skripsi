@@ -48,10 +48,12 @@ class MqttPublishCommand extends Command
                 // Log::error("MQTT error: " . $e->getMessage());
                 $mqtt = null;
                 sleep(4);
+                continue;
             } catch (\Throwable $e) {
                 // Log::error("Unexpected error: " . $e->getMessage());
                 $mqtt = null;
                 sleep(4);
+                continue;
             }
         }
     }

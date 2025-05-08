@@ -26,7 +26,6 @@ class MqttPublishCommand extends Command
                     $mqtt = $this->connectToMqtt();
                     if (!$mqtt || !$mqtt->isConnected()) {
                         Log::warning("MQTT disconnected. Reconnecting...");
-                        sleep(4);
                         continue;
                     }
                 }
@@ -48,14 +47,14 @@ class MqttPublishCommand extends Command
                     }
                 }
 
-                sleep(3);
+                sleep(1);
             } catch (MqttClientException $e) {
-                // Log::error("MQTT error: " . $e->getMessage());
+                Log::error("MQTT Client error: " . $e->getMessage());
                 $mqtt = null;
                 sleep(4);
                 continue;
             } catch (\Throwable $e) {
-                // Log::error("Unexpected error: " . $e->getMessage());
+                Log::error("Unexpected error: " . $e->getMessage());
                 $mqtt = null;
                 sleep(4);
                 continue;

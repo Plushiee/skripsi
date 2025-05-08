@@ -1,28 +1,24 @@
 @echo off
-:START
-echo Starting MQTT Subscriber...
+setlocal enabledelayedexpansion
 
-REM Pindah ke direktori tempat .bat ini berada
+:START
+echo [%DATE% %TIME%] Starting MQTT Subscriber...
+
+REM Pindah ke direktori skrip ini
 cd /d %~dp0
 
-REM Jalankan perintah dan tangkap output error ke error.log
-php artisan mqtt:subscribe 2> error.log
+REM Jalankan command, log stdout dan stderr
+php artisan mqtt:subscribe > mqtt.log 2> error.log
 
-REM Periksa apakah file error.log mengandung "MQTT error"
-findstr /c:"MQTT error" error.log >nul
-
-if %errorlevel% equ 0 (
-    echo Detected "MQTT error". Restarting MQTT Subscriber...
-    timeout /t 5 >nul
-    goto START
-)
-
-REM Jika perintah keluar tanpa pesan error tertentu
+REM Cek exit code Laravel (exit(1) kalau error)
 if %errorlevel% neq 0 (
-    echo An unexpected error occurred. Restarting MQTT Subscriber...
+    echo [%DATE% %TIME%] MQTT Subscriber exited with error code %errorlevel%.
+    echo Restarting in 5 seconds...
     timeout /t 5 >nul
     goto START
 )
 
-echo MQTT Subscriber stopped.
-pause
+REM Kalau keluar normal (exit(0)), tetap restart (misal untuk kasus update manual)
+echo [%DATE% %TIME%] MQTT Subscriber exited normally. Restarting...
+timeout /t 5 >nul
+goto START

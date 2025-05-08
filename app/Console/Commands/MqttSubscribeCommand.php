@@ -53,13 +53,14 @@ class MqttSubscribeCommand extends Command
     {
         $mqtt = null;
 
+        $lastReceivedTime = time();
+
         while (true) {
             try {
                 if (!$mqtt || !$mqtt->isConnected()) {
                     $mqtt = $this->connectToMqtt();
                     if (!$mqtt || !$mqtt->isConnected()) {
                         Log::warning("MQTT disconnected. Reconnecting...");
-                        sleep(4);
                         continue;
                     }
                 }
@@ -85,21 +86,31 @@ class MqttSubscribeCommand extends Command
                     $mqtt->subscribe($topic, function (string $topic, string $message) use ($mqtt) {
                         // echo sprintf("Received message on topic [%s]: %s\n", $topic, $message);
                         $this->handleMessage($topic, $message, $mqtt);
+                        $lastReceivedTime = time();
                     }, 0);
                 }
 
-                while ($mqtt->isConnected()) {
-                    $mqtt->loop();
-                    usleep(100000); // 100ms untuk tidak membebani CPU
+
+                if (time() - $lastReceivedTime > 60) { // lebih dari 3 menit
+                    Log::warning("Tidak ada data selama 5 menit, exit...");
+                    exit(1);
                 }
+
+                $mqtt->loop();
+
+                usleep(100000);
             } catch (MqttClientException $e) {
-                Log::error("MQTT error: " . $e->getMessage());
+                Log::error("MQTT Client error: " . $e->getMessage());
+                $mqtt = null;
+                sleep(4);
+                continue;
+            } catch (\Throwable $e) {
+                Log::error("Unexpected error: " . $e->getMessage());
+                $mqtt = null;
                 sleep(4);
                 continue;
             }
         }
-
-        return 0;
     }
 
     // Fungsi Handle message yang masuk

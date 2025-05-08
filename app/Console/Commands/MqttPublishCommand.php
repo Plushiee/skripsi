@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Log;
 class MqttPublishCommand extends Command
 {
     protected $signature = 'mqtt:publish';
-    protected $description = 'Mengirimkan status pompa via MQTT setiap 5 detik';
+    protected $description = 'Mengirimkan status pompa via MQTT';
 
     protected $lastPublishedStatus = null;
 
@@ -51,12 +51,12 @@ class MqttPublishCommand extends Command
             } catch (MqttClientException $e) {
                 Log::error("MQTT Client error: " . $e->getMessage());
                 $mqtt = null;
-                sleep(4);
+                sleep(1);
                 continue;
             } catch (\Throwable $e) {
                 Log::error("Unexpected error: " . $e->getMessage());
                 $mqtt = null;
-                sleep(4);
+                sleep(1);
                 continue;
             }
         }

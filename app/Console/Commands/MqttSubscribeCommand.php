@@ -102,12 +102,12 @@ class MqttSubscribeCommand extends Command
             } catch (MqttClientException $e) {
                 Log::error("MQTT Client error: " . $e->getMessage());
                 $mqtt = null;
-                sleep(4);
+                sleep(1);
                 continue;
             } catch (\Throwable $e) {
                 Log::error("Unexpected error: " . $e->getMessage());
                 $mqtt = null;
-                sleep(4);
+                sleep(1);
                 continue;
             }
         }

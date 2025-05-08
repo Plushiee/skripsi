@@ -9,6 +9,7 @@
 .env
 error.log
 error_publish.log
+mqtt.log
 .env.backup
 .env.production
 .phpactor.json

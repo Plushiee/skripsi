@@ -127,6 +127,10 @@ class MqttSubscribeCommand extends Command
             default => null,
         };
 
+        if ($topic == '72210456/dump') {
+            $mqtt->publish('72210456/dump_subs', 'dump', 0);
+        }
+
         if ($this->isAllDataCollected()) {
             // echo "Data terkumpul: " . json_encode($this->koleksiData) . "\n";
             cache()->put('sse-update-event', $this->koleksiData, now()->addMinutes(3));
@@ -271,8 +275,6 @@ class MqttSubscribeCommand extends Command
                     TabelPompaModel::create(['id_area' => 1, 'status' => $message, 'otomatis' => 0, 'suhu' => $lastRecord->suhu ?? 0]);
                 }
                 $mqtt->publish('72210456/pump', $message, 0);
-                break;
-            case '72210456/dump':
                 break;
         }
     }

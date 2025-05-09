@@ -84,16 +84,15 @@ class MqttSubscribeCommand extends Command
 
                 foreach ($topics as $topic) {
                     $mqtt->subscribe($topic, function (string $topic, string $message) use ($mqtt) {
-                        // echo sprintf("Received message on topic [%s]: %s\n", $topic, $message);
+                        echo sprintf("Received message on topic [%s]: %s\n", $topic, $message);
                         $this->handleMessage($topic, $message, $mqtt);
                         $lastReceivedTime = time();
                     }, 0);
-                }
 
-
-                if (time() - $lastReceivedTime > 60) { // lebih dari 3 menit
-                    Log::warning("Tidak ada data selama 5 menit, exit...");
-                    exit(1);
+                    if (time() - $lastReceivedTime > 60) { // lebih dari 3 menit
+                        Log::warning("Tidak ada data selama 1 menit, exit...");
+                        exit(1);
+                    }
                 }
 
                 $mqtt->loop();

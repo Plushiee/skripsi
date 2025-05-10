@@ -69,7 +69,7 @@ class MqttPublishCommand extends Command
             $mqtt = MQTT::connection('default');
 
             if (!$mqtt->isConnected()) {
-                $mqtt->connect(null, true, ['keep_alive' => 60]);
+                $mqtt->connect(null, true, ['keep_alive' => 10]);
             }
 
             if (!$mqtt->isConnected()) {

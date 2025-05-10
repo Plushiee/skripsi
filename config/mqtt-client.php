@@ -43,13 +43,13 @@ return [
 
             // A specific client id to be used for the connection. If omitted,
             // a random client id will be generated for each new connection.
-            'client_id' => 'mqtt_' . bin2hex(random_bytes(5)),
+            'client_id' => env('MQTT_CLIENT_ID'),
 
             // Whether a clean session shall be used and requested by the client.
             // A clean session will let the broker forget about subscriptions and
             // queued messages when the client disconnects. Also, if available,
             // data of a previous session will be deleted when connecting.
-            'use_clean_session' => env('MQTT_CLEAN_SESSION', true),
+            'use_clean_session' => env('MQTT_CLEAN_SESSION', false),
 
             // Whether logging shall be enabled. The default logger will be used
             // with the log level as configured.
@@ -98,19 +98,19 @@ return [
 
                 // The timeouts (in seconds) used for the connection. Some of these settings
                 // are only relevant when using the event loop of the MQTT client.
-                'connect_timeout' => env('MQTT_CONNECT_TIMEOUT', 300),
-                'socket_timeout' => env('MQTT_SOCKET_TIMEOUT', 300),
-                'resend_timeout' => env('MQTT_RESEND_TIMEOUT', 300),
+                'connect_timeout' => env('MQTT_CONNECT_TIMEOUT', 60),
+                'socket_timeout' => env('MQTT_SOCKET_TIMEOUT', 45),
+                'resend_timeout' => env('MQTT_RESEND_TIMEOUT', 30),
 
                 // The interval (in seconds) in which the client will send a ping to the broker,
                 // if no other message has been sent.
-                'keep_alive_interval' => env('MQTT_KEEP_ALIVE_INTERVAL', 60),
+                'keep_alive_interval' => env('MQTT_KEEP_ALIVE_INTERVAL', 300),
 
                 // Additional settings for the optional auto-reconnect. The delay between reconnect attempts is in seconds.
                 'auto_reconnect' => [
                     'enabled' => env('MQTT_AUTO_RECONNECT_ENABLED', true),
-                    'max_reconnect_attempts' => env('MQTT_AUTO_RECONNECT_MAX_RECONNECT_ATTEMPTS', 25),
-                    'delay_between_reconnect_attempts' => env('MQTT_AUTO_RECONNECT_DELAY_BETWEEN_RECONNECT_ATTEMPTS', 0),
+                    'max_reconnect_attempts' => env('MQTT_AUTO_RECONNECT_MAX_RECONNECT_ATTEMPTS', 10),
+                    'delay_between_reconnect_attempts' => env('MQTT_AUTO_RECONNECT_DELAY_BETWEEN_RECONNECT_ATTEMPTS', 2),
                 ],
 
             ],

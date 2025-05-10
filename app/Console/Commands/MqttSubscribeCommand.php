@@ -84,7 +84,7 @@ class MqttSubscribeCommand extends Command
 
                 foreach ($topics as $topic) {
                     $mqtt->subscribe($topic, function (string $topic, string $message) use ($mqtt) {
-                        echo sprintf("Received message on topic [%s]: %s\n", $topic, $message);
+                        // echo sprintf("Received message on topic [%s]: %s\n", $topic, $message);
                         $this->handleMessage($topic, $message, $mqtt);
                         $lastReceivedTime = time();
                     }, 0);

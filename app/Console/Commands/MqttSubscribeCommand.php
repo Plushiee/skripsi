@@ -87,12 +87,11 @@ class MqttSubscribeCommand extends Command
                         // echo sprintf("Received message on topic [%s]: %s\n", $topic, $message);
                         $this->handleMessage($topic, $message, $mqtt);
                         $lastReceivedTime = time();
+                        if (time() - $lastReceivedTime > 60) { // lebih dari 3 menit
+                            Log::warning("Tidak ada data selama 1 menit, exit...");
+                            exit(1);
+                        }
                     }, 0);
-
-                    if (time() - $lastReceivedTime > 60) { // lebih dari 3 menit
-                        Log::warning("Tidak ada data selama 1 menit, exit...");
-                        exit(1);
-                    }
                 }
 
                 $mqtt->loop();

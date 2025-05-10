@@ -828,7 +828,9 @@
                 window.myGauge.data.datasets[0].value = data.arusAir || 0;
                 window.myGauge.update();
 
-                fm.setPercentage(data.ping || 0);
+                const maxPing = 22;
+                const percentage = Math.min((data.ping || 0 / maxPing) * 100, 100);
+                fm.setPercentage(percentage);
             }
 
 

@@ -830,7 +830,8 @@
                 window.myGauge.update();
 
                 const maxPing = 22;
-                const percentage = Math.min((data.ping || 0 / maxPing) * 100, 100);
+                const ping = Math.max(data.ping ?? 0, 0);
+                const percentage = Math.min((ping / maxPing) * 100, 100);
                 fm.setPercentage(percentage);
             }
 

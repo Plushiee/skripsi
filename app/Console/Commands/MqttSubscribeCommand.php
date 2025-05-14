@@ -4,14 +4,11 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use PhpMqtt\Client\Facades\MQTT;
-use App\Events\MqttSubscribeEvent;
 use App\Models\TabelArusAirModel;
-use App\Models\TabelPHModel;
 use App\Models\TabelPingModel;
 use App\Models\TabelTDSModel;
 use App\Models\TabelTempHumModel;
 use PhpMqtt\Client\Exceptions\MqttClientException;
-use App\Events\SSEUpdateEvent;
 use App\Models\TabelPompaModel;
 use Illuminate\Support\Facades\Log;
 

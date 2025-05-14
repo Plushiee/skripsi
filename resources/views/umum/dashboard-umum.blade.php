@@ -436,7 +436,11 @@
                 window.myGauge.data.datasets[0].value = data.arusAir || 0;
                 window.myGauge.update();
 
-                $('#weather-icon').src = data.weather.icon || '';
+                let iconUrl = data.weather.icon ? 'https:' + data.weather.icon : '';
+                $('#weather-icon').html('<img src="' + iconUrl +
+                    '" alt="Weather Icon" class="img-fluid" style="max-width: 100px; max-height: 85px; margin: 0 auto; display: block;">'
+                    );
+
                 $('#weather-description').text(data.weather.condition || '--');
                 $('#current-time').text(data.localtime + 'WIB' || '--:--:-- WIB');
                 let localTime = data.localTime || '--:--:--';

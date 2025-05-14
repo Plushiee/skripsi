@@ -238,7 +238,7 @@ class ApiController extends Controller
             'totalNotFiltered' => TabelPingModel::count(),
             'rows' => $hasil
                 ->map(function ($item) use ($maxPing) {
-                    $sisaAir =  min(($item->ping / $maxPing) * 100, 100);
+                    $sisaAir = round(min(($item->ping / $maxPing) * 100, 100), 2);
                     return [
                         'timestamp' => $item->created_at->format('Y-m-d H:i:s'),
                         'id_area' => $item->id_area,

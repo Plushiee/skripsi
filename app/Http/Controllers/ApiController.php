@@ -217,6 +217,7 @@ class ApiController extends Controller
     public function getPing(Request $request)
     {
         $query = TabelPingModel::query();
+        $maxPing = 22;
 
         if ($request->has('waktu')) {
             if ($request->startHour != null && $request->endHour != null) {
@@ -236,12 +237,13 @@ class ApiController extends Controller
             'total' => $hasil->count(),
             'totalNotFiltered' => TabelPingModel::count(),
             'rows' => $hasil
-                ->map(function ($item) {
+                ->map(function ($item) use ($maxPing) {
+                    $sisaAir =  min(($item->ping / $maxPing) * 100, 100);
                     return [
                         'timestamp' => $item->created_at->format('Y-m-d H:i:s'),
                         'id_area' => $item->id_area,
                         'nama_wilayah' => AreaModel::where('id_area', $item->id_area)->first()->nama_area,
-                        'ping' => $item->ping,
+                        'ping' => $sisaAir ,
                     ];
                 })
                 ->toArray(),

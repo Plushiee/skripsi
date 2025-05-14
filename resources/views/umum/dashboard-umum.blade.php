@@ -439,8 +439,10 @@
                 $('#weather-icon').src = data.weather.icon || '';
                 $('#weather-description').text(data.weather.condition || '--');
                 $('#current-time').text(data.localtime + 'WIB' || '--:--:-- WIB');
-                let hours = parseInt(localtime.split(':')[0]);
+                let localTime = data.localTime || '--:--:--';
+                $('#current-time').text(localTime + ' WIB');
 
+                let hours = parseInt(localTime.split(':')[0]);
                 let iconClass = (hours >= 6 && hours < 18) ? 'fas fa-sun icon-sun' : 'fas fa-moon icon-moon';
                 $('#time-icon').attr('class', iconClass);
 

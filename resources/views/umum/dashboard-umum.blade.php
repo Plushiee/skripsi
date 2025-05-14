@@ -402,7 +402,6 @@
                 if (!sseWorker) {
                     sseWorker = new Worker("{{ asset('main/js/sse-worker.js') }}");
 
-                    // Handle pesan dari Worker
                     sseWorker.onmessage = (e) => {
                         const {
                             type,
@@ -419,7 +418,8 @@
                             }
 
                         } else if (type === 'error') {
-                            console.error("SSE Worker error:", message);
+                            console.error("SSE Worker error:", error);
+                            restartSSEWorker();
                         } else if (type === 'open') {
                             console.log("SSE connection established via Worker.");
                         }
@@ -469,6 +469,26 @@
                         type: 'stop'
                     });
                 }
+            }
+
+            let isRestarting = false;
+            function restartSSEWorker() {
+                if (isRestarting) return;
+                isRestarting = true;
+
+                if (sseWorker) {
+                    sseWorker.terminate();
+                    sseWorker = null;
+                }
+
+                if (lastSSEData) {
+                    updateUI(lastSSEData);
+                }
+
+                setTimeout(() => {
+                    startSSEWorker();
+                    isRestarting = false;
+                }, 3000);
             }
 
             function terminateSSEWorker() {

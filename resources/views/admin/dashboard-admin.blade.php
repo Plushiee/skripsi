@@ -752,7 +752,7 @@
 
             function initSSEWorker() {
                 if (!sseWorker) {
-                    sseWorker = new Worker("{{ asset('main/js/sse-worker.js') }}");
+                    sseWorker = new Worker("https://skripsi.plushi.ee/main/js/sse-worker.js");
 
                     // Handle pesan dari Worker
                     sseWorker.onmessage = (e) => {
@@ -772,13 +772,15 @@
                             }
 
                         } else if (type === 'error') {
-                            console.error("SSE Worker error:", message);
+                            console.error("SSE Worker error:", error);
+                            restartSSEWorker();
                         } else if (type === 'open') {
                             console.log("SSE connection established via Worker.");
                         }
                     };
                 }
             }
+
 
             function updateUI(data) {
                 updateTemperatureHumidity(data.tempHum?.temperature ?? null, data.tempHum?.humidity ?? null, false);
@@ -843,7 +845,11 @@
                 }
             }
 
+            let isRestarting = false;
             function restartSSEWorker() {
+                if (isRestarting) return;
+                isRestarting = true;
+
                 if (sseWorker) {
                     sseWorker.terminate();
                     sseWorker = null;
@@ -853,7 +859,10 @@
                     updateUI(lastSSEData);
                 }
 
-                startSSEWorker();
+                setTimeout(() => {
+                    startSSEWorker();
+                    isRestarting = false;
+                }, 3000);
             }
 
             // Mulai Worker

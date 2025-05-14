@@ -773,6 +773,7 @@
 
                         } else if (type === 'error') {
                             console.error("SSE Worker error:", message);
+                            restartSSEWorker();
                         } else if (type === 'open') {
                             console.log("SSE connection established via Worker.");
                         }
@@ -843,7 +844,11 @@
                 }
             }
 
+            let isRestarting = false;
             function restartSSEWorker() {
+                if (isRestarting) return;
+                isRestarting = true;
+
                 if (sseWorker) {
                     sseWorker.terminate();
                     sseWorker = null;
@@ -853,9 +858,11 @@
                     updateUI(lastSSEData);
                 }
 
-                startSSEWorker();
+                setTimeout(() => {
+                    startSSEWorker();
+                    isRestarting = false;
+                }, 3000);
             }
-
 
             // Mulai Worker
             startSSEWorker();

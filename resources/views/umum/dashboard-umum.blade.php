@@ -437,6 +437,7 @@
                 window.myGauge.update();
 
                 let iconUrl = data.weather.icon ? 'https:' + data.weather.icon : '';
+                console.log('iconUrl : ' + iconUrl);
                 $('#weather-icon').html('<img src="' + iconUrl +
                     '" alt="Weather Icon" class="img-fluid" style="max-width: 100px; max-height: 85px; margin: 0 auto; display: block;">'
                     );

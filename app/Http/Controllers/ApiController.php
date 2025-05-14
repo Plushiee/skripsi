@@ -588,17 +588,48 @@ class ApiController extends Controller
 
     public function getSSE()
     {
-        // Set unlimited execution time
         set_time_limit(0);
 
         return response()->stream(
             function () {
                 while (!connection_aborted()) {
-                    // Ambil data dari cache atau gunakan default jika tidak ada
                     $cachedData = cache('sse-update-event', []);
+                    $latestPompa = TabelPompaModel::orderByDesc('id')->first();
 
-                    // Validasi format data dan gunakan default jika tidak sesuai
+                    $cachedData['status_pompa'] = ($latestPompa && $latestPompa->status == "nyala") ? 1 : 0;
+
+                    if (!isset($cachedData['status_sensor']) || $cachedData['status_sensor'] != true) {
+                        $cachedData['tds'] = 0;
+                    }
+
+                    $apiKey = '5ab3a993f24b4255a8f64611240107';
+                    $city = 'Kotabaru,Yogyakarta';
+
+                    $lastFetchedAt = null;
+                    $cachedWeather = null;
+
+                    $now = Carbon::now();
+
+                    if (is_null($lastFetchedAt) || $now->diffInMinutes($lastFetchedAt) >= 60) {
+                        $apiUrl = "https://api.weatherapi.com/v1/forecast.json?key={$apiKey}&q={$city}&days=1&aqi=no&alerts=no";
+                        $weatherData = @file_get_contents($apiUrl);
+
+                        if ($weatherData !== false) {
+                            $data = json_decode($weatherData, true);
+
+                            $cachedWeather = [
+                                'condition' => $data['current']['condition']['text'] ?? '--',
+                                'icon' => $data['current']['condition']['icon'] ?? '',
+                            ];
+                            $lastFetchedAt = $now;
+                        } else {
+                            $cachedWeather = ['error' => 'Failed to fetch weather data'];
+                        }
+                    }
+
                     $formattedData = [
+                        'weather' => $cachedWeather,
+                        'localTime' => $now->format('H:i:s'),
                         'ph' => $cachedData['ph'] ?? 0.00,
                         'ping' => $cachedData['ping'] ?? 0,
                         'tds' => $cachedData['tds'] ?? 0.00,
@@ -611,18 +642,13 @@ class ApiController extends Controller
                         'status_relay' => isset($cachedData['status_relay']) ? ($cachedData['status_relay'] == "true" ? 1 : 0) : 0,
                     ];
 
-                    // Kirim data sebagai event SSE
                     echo 'data: ' . json_encode($formattedData) . "\n\n";
 
-                    // Flush buffer untuk menghindari tumpukan data
                     @ob_flush();
                     flush();
 
-                    // Tunggu sebelum mengirim data berikutnya (interval 1 detik)
                     sleep(1);
                 }
-
-                // Hentikan script jika koneksi ditutup
                 exit;
             },
             200,
@@ -637,13 +663,11 @@ class ApiController extends Controller
 
     public function getSSEAdmin()
     {
-        // Set unlimited execution time
         set_time_limit(0);
 
         return response()->stream(
             function () {
                 while (!connection_aborted()) {
-                    // Ambil data dari cache atau gunakan default jika tidak ada
                     $cachedData = cache('sse-update-event', []);
                     $latestPompa = TabelPompaModel::orderByDesc('id')->first();
 
@@ -653,8 +677,34 @@ class ApiController extends Controller
                         $cachedData['tds'] = 0;
                     }
 
-                    // Validasi format data dan gunakan default jika tidak sesuai
+                    $apiKey = '5ab3a993f24b4255a8f64611240107';
+                    $city = 'Kotabaru,Yogyakarta';
+
+                    $lastFetchedAt = null;
+                    $cachedWeather = null;
+
+                    $now = Carbon::now();
+
+                    if (is_null($lastFetchedAt) || $now->diffInMinutes($lastFetchedAt) >= 60) {
+                        $apiUrl = "https://api.weatherapi.com/v1/forecast.json?key={$apiKey}&q={$city}&days=1&aqi=no&alerts=no";
+                        $weatherData = @file_get_contents($apiUrl);
+
+                        if ($weatherData !== false) {
+                            $data = json_decode($weatherData, true);
+
+                            $cachedWeather = [
+                                'condition' => $data['current']['condition']['text'] ?? '--',
+                                'icon' => $data['current']['condition']['icon'] ?? '',
+                            ];
+                            $lastFetchedAt = $now;
+                        } else {
+                            $cachedWeather = ['error' => 'Failed to fetch weather data'];
+                        }
+                    }
+
                     $formattedData = [
+                        'weather' => $cachedWeather,
+                        'localTime' => $now->format('H:i:s'),
                         'ph' => $cachedData['ph'] ?? 0.00,
                         'ping' => $cachedData['ping'] ?? 0,
                         'tds' => $cachedData['tds'] ?? 0.00,
@@ -670,14 +720,11 @@ class ApiController extends Controller
                         'suhu_pompa' => $latestPompa->suhu ?? 0,
                     ];
 
-                    // Kirim data sebagai event SSE
                     echo 'data: ' . json_encode($formattedData) . "\n\n";
 
-                    // Flush buffer untuk menghindari tumpukan data
                     @ob_flush();
                     flush();
 
-                    // Tunggu sebelum mengirim data berikutnya (interval 1 detik)
                     sleep(1);
                 }
                 exit;

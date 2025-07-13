@@ -4,18 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="IOT - Fakultas Biologi">
-    <meta name="author" content="Anthonius Adi Nugroho, S.T., M.Cs., Nikolaus Pastika Bara Satyaradi">
+    <meta name="description" content="IOT - Hydrosense">
+    <meta name="author" content="Nikolaus Pastika Bara Satyaradi">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>@yield('title')</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{ asset('main/css/main-css/bootstrap.min.css') }}">
 
-    <script src="https://getbootstrap.com/docs/5.3/assets/js/color-modes.js"></script>
+    <script src="{{ asset('main/js/main-js/color-modes.js')}}"></script>
 
     <link rel="stylesheet" href="{{ asset('main/css/navbar.css') }}">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="{{ asset('main/css/main-css/bootstrap-icons.min.css')}}">
     @yield('css-extras')
     <style>
         /* Floating Container */
@@ -127,12 +126,9 @@
 
 
     <!-- Core JavaScript -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
-    </script>
-    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
-        crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('main/js/main-js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ asset('main/js/main-js/jquery-3.7.1.js')}}"></script>
+    <script src="{{ asset('main/js/main-js/sweetalert2@11.js')}}"></script>
     <!-- /Core JavaScript -->
 
     <!-- Script Extras -->

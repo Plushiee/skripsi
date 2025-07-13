@@ -237,7 +237,6 @@ class AdminMasterController extends Controller
         $data = User::where('id', $id)->first();
 
         if (!$data) {
-            // Jika user dengan ID ini tidak ditemukan, kembalikan 404
             abort(404, 'User not found');
         }
 

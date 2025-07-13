@@ -62,7 +62,7 @@
     <script src="{{ asset('main/js/bootstrap-table.js') }}"></script>
     <script src="{{ asset('main/js/table-export/jsPDF/polyfills.umd.min.js') }}"></script>
     <script src="{{ asset('main/js/bootstrap-table-export.js') }}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tableexport.jquery.plugin@1.29.0/tableExport.min.js"></script>
+    <script src="{{ asset('main/js/table-export/tableExport.min.js')}}"></script>
     <script src="{{ asset('main/js/table-export/jsPDF/jspdf.umd.min.js') }}"></script>
     <script src="{{ asset('main/js/table-export/FileSaver/FileSaver.min.js') }}"></script>
     <script src="{{ asset('main/js/table-export/js-xlsx/xlsx.core.min.js') }}"></script>

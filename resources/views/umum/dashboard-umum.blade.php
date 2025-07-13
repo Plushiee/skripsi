@@ -2,9 +2,7 @@
 @section('title', 'HYDROSENSE | Dashboard')
 @section('css-extras')
     <link rel="stylesheet" href="{{ asset('main/css/dashboard.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
-        integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="{{ asset('main/css/main-css/font-awsome.min.css')}}"/>
 @endsection
 @section('content')
     <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
@@ -251,17 +249,15 @@
 @endsection
 
 @section('jQuery-extras')
-    <script src="https://cdn.jsdelivr.net/npm/lodash/lodash.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
+    <script src="{{ asset('main/js/main-js/lodash.min.js')}}"></script>
+    <script src="{{ asset('main/js/main-js/sweetalert2@11.js')}}" defer></script>
     <script src="{{ asset('main/js/js-fluid-meter.js') }}"></script>
-    <script src="https://code.jscharting.com/latest/jscharting.js" defer></script>
-    <script type="text/javascript" src="https://code.jscharting.com/latest/modules/types.js" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.min.js"
-        integrity="sha512-L0Shl7nXXzIlBSUUPpxrokqq4ojqgZFQczTYlGjzONGTDAcLremjwaWv5A+EDLnxhQzY5xUZPWLOLqYRkY0Cbw=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://unpkg.com/chart.js@2.8.0/dist/Chart.bundle.js" defer></script>
-    <script src="https://unpkg.com/chartjs-gauge@0.3.0/dist/chartjs-gauge.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/gh/emn178/chartjs-plugin-labels/src/chartjs-plugin-labels.js" defer></script>
+    <script src="{{ asset('main/js/main-js/jscharting.js')}}" defer></script>
+    <script type="text/javascript" src="{{ asset('main/js/main-js/js-charting/type.js')}}" defer></script>
+    <script src="{{ asset('main/js/main-js/chart.min.js') }}"></script>
+    <script src="{{ asset('main/js/main-js/chartjs/Chart.bundle.js') }}" defer></script>
+    <script src="{{ asset('main/js/main-js/chartjs/chartjs-gauge.js')}}" defer></script>
+    <script src="{{ asset('main/js/main-js/chartjs/chartjs-plugin-labels.js')}}" defer></script>
     <script>
         $(document).ready(function() {
             // MQTT Udara

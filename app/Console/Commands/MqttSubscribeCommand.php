@@ -4,14 +4,11 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use PhpMqtt\Client\Facades\MQTT;
-use App\Events\MqttSubscribeEvent;
 use App\Models\TabelArusAirModel;
-use App\Models\TabelPHModel;
 use App\Models\TabelPingModel;
 use App\Models\TabelTDSModel;
 use App\Models\TabelTempHumModel;
 use PhpMqtt\Client\Exceptions\MqttClientException;
-use App\Events\SSEUpdateEvent;
 use App\Models\TabelPompaModel;
 use Illuminate\Support\Facades\Log;
 
@@ -87,13 +84,11 @@ class MqttSubscribeCommand extends Command
                         // echo sprintf("Received message on topic [%s]: %s\n", $topic, $message);
                         $this->handleMessage($topic, $message, $mqtt);
                         $lastReceivedTime = time();
+                        if (time() - $lastReceivedTime > 60) { // lebih dari 3 menit
+                            Log::warning("Tidak ada data selama 1 menit, exit...");
+                            exit(1);
+                        }
                     }, 0);
-                }
-
-
-                if (time() - $lastReceivedTime > 60) { // lebih dari 3 menit
-                    Log::warning("Tidak ada data selama 5 menit, exit...");
-                    exit(1);
                 }
 
                 $mqtt->loop();
@@ -133,7 +128,7 @@ class MqttSubscribeCommand extends Command
 
         if ($this->isAllDataCollected()) {
             // echo "Data terkumpul: " . json_encode($this->koleksiData) . "\n";
-            cache()->put('sse-update-event', $this->koleksiData, now()->addMinutes(3));
+            cache()->put('sse-update-event', $this->koleksiData, now()->addSeconds(5));
             $this->resetkoleksiData();
         }
 

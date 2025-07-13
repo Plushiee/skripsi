@@ -1,5 +1,3 @@
-// sse-worker.js
-
 let eventSource = null;
 let retryTimeout = 1000;
 

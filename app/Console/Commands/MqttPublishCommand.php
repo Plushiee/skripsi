@@ -69,7 +69,7 @@ class MqttPublishCommand extends Command
             $mqtt = MQTT::connection('default');
 
             if (!$mqtt->isConnected()) {
-                $mqtt->connect(null, true, ['keep_alive' => 60]);
+                $mqtt->connect(null, true, ['keep_alive' => 10]);
             }
 
             if (!$mqtt->isConnected()) {
@@ -99,7 +99,7 @@ class MqttPublishCommand extends Command
     protected function publishDumpData($mqtt)
     {
         try {
-            $mqtt->publish('72210456/dump', 'dump', 0);
+            $mqtt->publish('72210456/dump_publish', 'dump', 0);
         } catch (MqttClientException $e) {
             Log::error("Failed to publish message: " . $e->getMessage());
             throw $e;

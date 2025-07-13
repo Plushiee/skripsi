@@ -746,43 +746,13 @@
             window.myGauge = new Chart(ctx,
                 config);
 
-            setInterval(() => {
-                const now = new Date();
-                const hours = now.getHours();
-                const minutes = now.getMinutes();
-                const seconds = now.getSeconds();
-                $('#current-time').text(
-                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} WIB`
-                );
-                $('#time-icon').attr('class', hours >= 6 && hours < 18 ? 'fas fa-sun icon-sun' :
-                    'fas fa-moon icon-moon');
-            }, 1000);
-
-            // API weather
-            const apiKey = '5ab3a993f24b4255a8f64611240107';
-            const city = 'Kotabaru,Yogyakarta';
-            const apiUrl =
-                `https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${city}&days=1&aqi=no&alerts=no}`;
-
-            fetch(apiUrl)
-                .then(response => response.json())
-                .then(data => {
-                    const weatherIcon = document.getElementById('weather-icon');
-                    const weatherDescription = document.getElementById('weather-description');
-
-                    const iconUrl = data.current.condition.icon;
-                    weatherIcon.src = iconUrl;
-                    weatherDescription.textContent = data.current.condition.text;
-                })
-                .catch(error => console.error('Error fetching weather data:', error));
-
             // EventSource (SSE) by Worker
             var sseWorker = null;
             let lastSSEData = null;
 
             function initSSEWorker() {
                 if (!sseWorker) {
-                    sseWorker = new Worker("{{ asset('main/js/sse-worker.js') }}");
+                    sseWorker = new Worker("https://skripsi.plushi.ee/main/js/sse-worker.js");
 
                     // Handle pesan dari Worker
                     sseWorker.onmessage = (e) => {
@@ -802,13 +772,15 @@
                             }
 
                         } else if (type === 'error') {
-                            console.error("SSE Worker error:", message);
+                            console.error("SSE Worker error:", error);
+                            restartSSEWorker();
                         } else if (type === 'open') {
                             console.log("SSE connection established via Worker.");
                         }
                     };
                 }
             }
+
 
             function updateUI(data) {
                 updateTemperatureHumidity(data.tempHum?.temperature ?? null, data.tempHum?.humidity ?? null, false);
@@ -828,7 +800,23 @@
                 window.myGauge.data.datasets[0].value = data.arusAir || 0;
                 window.myGauge.update();
 
-                fm.setPercentage(data.ping || 0);
+                let iconUrl = data.weather.icon ? 'https:' + data.weather.icon : '';
+                $('#weather-icon').attr('src', iconUrl);
+
+                $('#weather-description').text(data.weather.condition || '--');
+                $('#current-time').text(data.localtime + 'WIB' || '--:--:-- WIB');
+                let localTime = data.localTime || '--:--:--';
+                $('#current-time').text(localTime + ' WIB');
+
+                let hours = parseInt(localTime.split(':')[0]);
+                let iconClass = (hours >= 6 && hours < 18) ? 'fas fa-sun icon-sun' : 'fas fa-moon icon-moon';
+                $('#time-icon').attr('class', iconClass);
+
+
+                const maxPing = 22;
+                const ping = Math.max(data.ping ?? 0, 0);
+                const percentage = Math.min((ping / maxPing) * 100, 100);
+                fm.setPercentage(percentage);
             }
 
 
@@ -857,7 +845,11 @@
                 }
             }
 
+            let isRestarting = false;
             function restartSSEWorker() {
+                if (isRestarting) return;
+                isRestarting = true;
+
                 if (sseWorker) {
                     sseWorker.terminate();
                     sseWorker = null;
@@ -867,7 +859,10 @@
                     updateUI(lastSSEData);
                 }
 
-                startSSEWorker();
+                setTimeout(() => {
+                    startSSEWorker();
+                    isRestarting = false;
+                }, 3000);
             }
 
             // Mulai Worker

@@ -2,9 +2,9 @@
 @section('title', 'HYDROSENSE | Akun')
 @section('css-extras')
     <link rel="stylesheet" href="{{ asset('main/css/dashboard.css') }}">
-    <link href="https://unpkg.com/filepond/dist/filepond.css" rel="stylesheet">
-    <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css" rel="stylesheet">
-    <link href="https://unpkg.com/filepond-plugin-file-poster/dist/filepond-plugin-file-poster.css" rel="stylesheet" />
+    <link href="{{ asset('main/css/main-css/filepond.css') }}" rel="stylesheet">
+    <link href="{{ asset('main/css/main-css/filepond-plugin-image-preview.css') }}" rel="stylesheet">
+    <link href="{{ asset('main/css/main-css/filepond-plugin-file-poster.css') }}" rel="stylesheet" />
 @endsection
 @section('content')
     <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
@@ -99,30 +99,25 @@
 @endsection
 
 @section('jQuery-extras')
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('main/js/main-js/sweetalert2@11.js') }}"></script>
     <script src="{{ asset('main/js/js-fluid-meter.js') }}"></script>
-    <script src="https://code.jscharting.com/latest/jscharting.js"></script>
-    <script type="text/javascript" src="https://code.jscharting.com/latest/modules/types.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.min.js"
-        integrity="sha512-L0Shl7nXXzIlBSUUPpxrokqq4ojqgZFQczTYlGjzONGTDAcLremjwaWv5A+EDLnxhQzY5xUZPWLOLqYRkY0Cbw=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://unpkg.com/chart.js@2.8.0/dist/Chart.bundle.js"></script>
-    <script src="https://unpkg.com/chartjs-gauge@0.3.0/dist/chartjs-gauge.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/emn178/chartjs-plugin-labels/src/chartjs-plugin-labels.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.min.js"
-        integrity="sha512-U2WE1ktpMTuRBPoCFDzomoIorbOyUv0sP8B+INA3EzNAhehbzED1rOJg6bCqPf/Tuposxb5ja/MAUnC8THSbLQ=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="{{ asset('main/js/main-js/jscharting.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('main/js/main-js/js-charting/type.js') }}"></script>
+    <script src="{{ asset('main/js/main-js/chart.min.js') }}"></script>
+    <script src="{{ asset('main/js/main-js/chartjs/Chart.bundle.js') }}" defer></script>
+    <script src="{{ asset('main/js/main-js/chartjs/chartjs-gauge.js') }}" defer></script>
+    <script src="{{ asset('main/js/main-js/chartjs/chartjs-plugin-labels.js') }}" defer></script>
+    <script src="{{ asset('main/js/main-js/dropzone.min.js') }}"></script>
 
-    <script src="https://unpkg.com/filepond/dist/filepond.js"></script>
+    <script src="{{ asset('main/js/main-js/filepond/filepond.js') }}"></script>
 
     <!-- FilePond plugins -->
-    <script src="https://unpkg.com/filepond-plugin-file-poster/dist/filepond-plugin-file-poster.js"></script>
-    <script src="https://unpkg.com/filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.js"></script>
-    <script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script>
-    <script src="https://unpkg.com/filepond-plugin-file-encode/dist/filepond-plugin-file-encode.js"></script>
-    <script src="https://unpkg.com/filepond-plugin-file-validate-size/dist/filepond-plugin-file-validate-size.js"></script>
-    <script src="https://unpkg.com/filepond-plugin-image-exif-orientation/dist/filepond-plugin-image-exif-orientation.js">
-    </script>
+    <script src="{{ asset('main/js/main-js/filepond/filepond-plugin-file-poster.js') }}"></script>
+    <script src="{{ asset('main/js/main-js/filepond/filepond-plugin-file-validate-type.js')}}"></script>
+    <script src="{{ asset('main/js/main-js/filepond/filepond-plugin-image-preview.js')}}"></script>
+    <script src="{{ asset('main/js/main-js/filepond/filepond-plugin-file-encode.js')}}"></script>
+    <script src="{{ asset('main/js/main-js/filepond/filepond-plugin-file-validate-size.js')}}"></script>
+    <script src="{{ asset('main/js/main-js/filepond/filepond-plugin-image-exif-orientation.js')}}"></script>
 
     <script>
         $(document).ready(function() {
@@ -342,7 +337,8 @@
                         function(xhr) {
                             alert.fire({
                                 icon: 'error',
-                                title:  xhr.responseJSON?.message || xhr.responseJSON?.messages ||
+                                title: xhr.responseJSON?.message || xhr.responseJSON
+                                    ?.messages ||
                                     'Error tidak diketahui.',
                             });
                         }

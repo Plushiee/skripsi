@@ -3,7 +3,7 @@
 @section('css-extras')
     <link rel="stylesheet" href="{{ asset('main/css/dashboard.css') }}">
     <!-- CSS untuk Bootstrap Datepicker -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css">
+    <link rel="stylesheet" href="{{ asset('main/css/main-css/bootstrap-datepicker.min.css') }}">
 @endsection
 @section('content')
     <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
@@ -78,10 +78,10 @@
 @endsection
 
 @section('jQuery-extras')
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ asset('main/js/main-js/sweetalert2@11.js') }}"></script>
+    <script src="{{ asset('main/js/main-js/chart.js') }}"></script>
     <!-- JavaScript Bootstrap Datepicker -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js"></script>
+    <script src="{{ asset('main/js/main-js/bootstrap-datepicker.min.js') }}"></script>
 
     <script>
         $(document).ready(function() {

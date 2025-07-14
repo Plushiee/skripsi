@@ -10,12 +10,14 @@
     <title>@yield('title')</title>
 
     <link rel="stylesheet" href="{{ asset('main/css/main-css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+        integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-    <script src="{{ asset('main/js/main-js/color-modes.js')}}"></script>
+    <script src="{{ asset('main/js/main-js/color-modes.js') }}"></script>
 
     <link rel="stylesheet" href="{{ asset('main/css/navbar.css') }}">
-    <link rel="stylesheet" href="{{ asset('main/css/main-css/bootstrap-icons.min.css')}}">
-    {{-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"> --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 
     @yield('css-extras')
     <style>
@@ -129,8 +131,8 @@
 
     <!-- Core JavaScript -->
     <script src="{{ asset('main/js/main-js/bootstrap.bundle.min.js') }}"></script>
-    <script src="{{ asset('main/js/main-js/jquery-3.7.1.js')}}"></script>
-    <script src="{{ asset('main/js/main-js/sweetalert2@11.js')}}"></script>
+    <script src="{{ asset('main/js/main-js/jquery-3.7.1.js') }}"></script>
+    <script src="{{ asset('main/js/main-js/sweetalert2@11.js') }}"></script>
     <!-- /Core JavaScript -->
 
     <!-- Script Extras -->

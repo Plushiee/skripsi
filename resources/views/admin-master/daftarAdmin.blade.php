@@ -5,7 +5,7 @@
     <link rel="stylesheet" href="{{ asset('main/css/bootstrap-table.css') }}">
     <!-- /Core Bootstrap Table -->
     <link rel="stylesheet" href="{{ asset('main/css/tabel.css') }}">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="{{ asset('main/css/main-css/flatpickr.min.css')}}">
     <style>
         .swal2-html-container {
             padding-top: 0;
@@ -93,12 +93,12 @@
     <script src="{{ asset('main/js/bootstrap-table.js') }}"></script>
     <script src="{{ asset('main/js/table-export/jsPDF/polyfills.umd.min.js') }}"></script>
     <script src="{{ asset('main/js/bootstrap-table-export.js') }}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tableexport.jquery.plugin@1.29.0/tableExport.min.js"></script>
+    <script src="{{ asset('main/js/table-export/tableExport.min.js') }}"></script>
     <script src="{{ asset('main/js/table-export/jsPDF/jspdf.umd.min.js') }}"></script>
     <script src="{{ asset('main/js/table-export/FileSaver/FileSaver.min.js') }}"></script>
     <script src="{{ asset('main/js/table-export/js-xlsx/xlsx.core.min.js') }}"></script>
     <script src="{{ asset('main/js/table-export/html2canvas/html2canvas.min.js') }}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="{{ asset('main/js/main-js/flatpickr.js') }}"></script>
     <!-- /Core Bootstrap Table -->
     <script>
         var $table = $('#table');

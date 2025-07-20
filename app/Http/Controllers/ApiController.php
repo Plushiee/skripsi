@@ -594,6 +594,9 @@ class ApiController extends Controller
 
         return response()->stream(
             function () {
+                $lastFetchedAt = null;
+                $cachedWeather = null;
+
                 while (!connection_aborted()) {
                     $cachedData = cache('sse-update-event', []);
                     $latestPompa = TabelPompaModel::orderByDesc('id')->first();
@@ -606,9 +609,6 @@ class ApiController extends Controller
 
                     $apiKey = '5ab3a993f24b4255a8f64611240107';
                     $city = 'Kotabaru,Yogyakarta';
-
-                    $lastFetchedAt = null;
-                    $cachedWeather = null;
 
                     $now = Carbon::now();
 
@@ -669,6 +669,9 @@ class ApiController extends Controller
 
         return response()->stream(
             function () {
+                $lastFetchedAt = null;
+                $cachedWeather = null;
+
                 while (!connection_aborted()) {
                     $cachedData = cache('sse-update-event', []);
                     $latestPompa = TabelPompaModel::orderByDesc('id')->first();
@@ -681,9 +684,6 @@ class ApiController extends Controller
 
                     $apiKey = '5ab3a993f24b4255a8f64611240107';
                     $city = 'Kotabaru,Yogyakarta';
-
-                    $lastFetchedAt = null;
-                    $cachedWeather = null;
 
                     $now = Carbon::now();
 

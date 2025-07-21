@@ -13,7 +13,7 @@
     <div id="sidebar-wrapper">
         <ul class="sidebar-nav">
             <li class="sidebar-brand">
-                <a href="https://www.ukdw.ac.id/akademik/fakultas-bioteknologi/">
+                <a href="">
                     <img src="{{ asset('main/img/LOGO-FAK-BIOTEK.png') }}" class="logo img-fluid" alt="LOGO-BIOTEK.png">
                 </a>
             </li>

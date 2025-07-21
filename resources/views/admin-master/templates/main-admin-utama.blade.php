@@ -20,7 +20,7 @@
         integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-    <script src="{{ asset('main/js/main-js/color-modes.js')}}"></script>
+    <script src="{{ asset('main/js/main-js/color-modes.js') }}"></script>
 
     <link rel="stylesheet" href="{{ asset('main/css/navbar.css') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -94,13 +94,13 @@
 <body>
     {{-- @vite('resources/js/app.js') --}}
     <div id="wrapper">
-        <!-- navbar -->
-        @include('admin-master.templates.navbar')
-        <!-- /#navbar-wrapper -->
-
         <!-- Page Content -->
-        <div id="page-content-wrapper">
-            <div class="container-fluid">
+        <div id="page-content-wrapper m-0">
+            <!-- navbar -->
+            @include('admin-master.templates.navbar')
+            <!-- /#navbar-wrapper -->
+
+            <div class="container-fluid p-4">
                 <div class="row">
                     <div class="col-lg-12">
                         @yield('content')
@@ -123,10 +123,10 @@
     </div>
     <!-- /#wrapper -->
 
-        <!-- Core JavaScript -->
+    <!-- Core JavaScript -->
     <script src="{{ asset('main/js/main-js/bootstrap.bundle.min.js') }}"></script>
-    <script src="{{ asset('main/js/main-js/jquery-3.7.1.js')}}"></script>
-    <script src="{{ asset('main/js/main-js/sweetalert2@11.js')}}"></script>
+    <script src="{{ asset('main/js/main-js/jquery-3.7.1.js') }}"></script>
+    <script src="{{ asset('main/js/main-js/sweetalert2@11.js') }}"></script>
     <!-- /Core JavaScript -->
 
     <!-- Script Extras -->

@@ -88,13 +88,13 @@
 <body>
     {{-- @vite('resources/js/app.js') --}}
     <div id="wrapper">
-        <!-- navbar -->
-        @include('admin.templates.navbar')
-        <!-- /#navbar-wrapper -->
-
         <!-- Page Content -->
-        <div id="page-content-wrapper">
-            <div class="container-fluid">
+        <div id="page-content-wrapper m-0">
+            <!-- navbar -->
+            @include('admin.templates.navbar')
+            <!-- /#navbar-wrapper -->
+
+            <div class="container-fluid p-4">
                 <div class="row">
                     <div class="col-lg-12">
                         @yield('content')

@@ -125,10 +125,6 @@
             </div>
         </div>
         <!-- /#page-content-wrapper -->
-
-        <div id="sidebar-overlay"
-            style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.3); z-index:999;">
-        </div>
     </div>
     <!-- /#wrapper -->
 
@@ -140,25 +136,7 @@
     <!-- /Core JavaScript -->
 
     <!-- Script Extras -->
-    {{-- <script src="{{ asset('main/js/sidebar.js') }}"></script> --}}
-    <script>
-        $(document).ready(function() {
-            $('#menu-toggle').click(function() {
-                $('#wrapper').toggleClass('toggled');
-
-                if ($('#wrapper').hasClass('toggled')) {
-                    $('#sidebar-overlay').fadeIn();
-                } else {
-                    $('#sidebar-overlay').fadeOut();
-                }
-            });
-
-            $('#sidebar-overlay').click(function() {
-                $('#wrapper').removeClass('toggled');
-                $(this).fadeOut();
-            });
-        });
-    </script>
+    <script src="{{ asset('main/js/sidebar.js') }}"></script>
     <script src="{{ asset('main/js/notification.js') }}"></script>
     @yield('jQuery-extras')
 

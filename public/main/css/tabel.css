@@ -30,7 +30,13 @@ th {
     color: #fff !important;
 }
 
-.accordion-button, #resetButton {
+#resetButton {
+    background-color: #e9d200 !important;
+    color: #fff !important;
+    font-weight: bold !important;
+}
+
+.accordion-button, #applyFilterButton {
     background-color: #008000 !important;
     color: #fff !important;
     font-weight: bold !important;

@@ -42,7 +42,12 @@
                                     <input type="time" class="form-control" id="endHour" name="endHour"
                                         onchange="validateEndHour()" disabled>
                                 </div>
-                                <button type="button" class="btn btn-primary" id="resetButton">Reset</button>
+                                <div
+                                    class="d-flex flex-column flex-md-row justify-content-center justify-content-md-start gap-2">
+                                    <button type="button" class="btn btn-warning" id="resetButton">Reset</button>
+                                    <button type="button" class="btn btn-success" id="applyFilterButton">Terapkan
+                                        Filter</button>
+                                </div>
                             </form>
                         </div>
                     </div>
@@ -69,7 +74,7 @@
     <script src="{{ asset('main/js/bootstrap-table.js') }}"></script>
     <script src="{{ asset('main/js/table-export/jsPDF/polyfills.umd.min.js') }}"></script>
     <script src="{{ asset('main/js/bootstrap-table-export.js') }}"></script>
-    <script src="{{ asset('main/js/table-export/tableExport.min.js')}}"></script>
+    <script src="{{ asset('main/js/table-export/tableExport.min.js') }}"></script>
     <script src="{{ asset('main/js/table-export/jsPDF/jspdf.umd.min.js') }}"></script>
     <script src="{{ asset('main/js/table-export/FileSaver/FileSaver.min.js') }}"></script>
     <script src="{{ asset('main/js/table-export/js-xlsx/xlsx.core.min.js') }}"></script>
@@ -158,6 +163,11 @@
                     console.error("Error: " + error);
                     console.error("Status: " + status);
                     console.dir(xhr);
+                    alert.fire({
+                        icon: 'error',
+                        title: 'Terjadi Kesalahan',
+                        text: 'Gagal memuat data. Silakan coba lagi.'
+                    });
                 }
             });
         }
@@ -165,7 +175,7 @@
 
     <script>
         $(document).ready(function() {
-            $('#waktu, #startHour, #endHour').on('change', function() {
+            $('#applyFilterButton').on('click', function() {
                 autoFilterData();
             });
 
@@ -178,7 +188,23 @@
                 var startHour = $('#startHour').val();
                 var endHour = $('#endHour').val();
 
-                if (waktu) {
+                if (!waktu) {
+                    alert.fire({
+                        icon: 'error',
+                        title: 'Waktu Tidak Boleh Kosong',
+                    });
+                    return;
+                }
+                if (!startHour || !endHour) {
+                    alert.fire({
+                        icon: 'error',
+                        title: 'Jam Mulai dan Jam Selesai Tidak Boleh Kosong',
+                    });
+                    return;
+                }
+
+                if (startHour && endHour) {
+                    console.log('Filtering data from', startHour, 'to', endHour);
                     $.ajax({
                         type: "POST",
                         url: "{{ route('api.get.arusAir') }}",
@@ -189,15 +215,31 @@
                             endHour: endHour
                         },
                         dataType: "json",
+                        beforeSend: function() {
+                            Swal.fire({
+                                title: 'Loading',
+                                text: 'Permintaan Anda sedang diproses...',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+                        },
                         success: function(response) {
                             console.log(response);
                             var table = $('#table');
                             table.bootstrapTable('load', response);
+                            Swal.close();
                         },
                         error: function(xhr, status, error) {
                             console.error("Error: " + error);
                             console.error("Status: " + status);
                             console.dir(xhr);
+                            alert.fire({
+                                icon: 'error',
+                                title: 'Terjadi Kesalahan',
+                                text: 'Gagal memuat data. Silakan coba lagi.'
+                            });
                         }
                     });
                 };

@@ -219,10 +219,10 @@ class MqttSubscribeCommand extends Command
                     $averageTDS = round(array_sum($this->tdsData) / count($this->tdsData), 2);
 
                     $lastRecord = TabelTDSModel::latest('created_at')->first();
-                    $isDifferent = !$lastRecord || $lastRecord->tds != $averageTDS;
+                    $isDifferent = !$lastRecord || $lastRecord->ppm != $averageTDS;
 
                     if ($isDifferent) {
-                        TabelTDSModel::create(['id_area' => 1, 'tds' => $averageTDS]);
+                        TabelTDSModel::create(['id_area' => 1, 'ppm' => $averageTDS]);
                         $this->tdsData = [];
                     } else {
                         $this->tdsData = [];

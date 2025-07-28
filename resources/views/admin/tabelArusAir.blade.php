@@ -82,40 +82,41 @@
     <!-- /Core Bootstrap Table -->
     <script>
         var $table = $('#table');
-        $(function() {
-            $('#waktu').change(function(e) {
-                e.preventDefault();
 
-                if ($('#waktu').val()) {
-                    $('#startHour').prop('disabled', false);
-                    $('#endHour').prop('disabled', false);
-                } else {
-                    $('#startHour').prop('disabled', true);
-                    $('#endHour').prop('disabled', true);
-                    $('#startHour').val('');
-                    $('#endHour').val('');
-                }
-            });
+        $('#waktu').change(function(e) {
+            e.preventDefault();
 
-            function validateEndHour() {
-                const startHour = document.getElementById('startHour').value;
-                const endHourInput = document.getElementById('endHour');
-
-                if (startHour) {
-                    endHourInput.min = startHour;
-                    if (endHourInput.value < startHour && endHourInput.value != '') {
-                        endHourInput.value = '';
-                        alert.fire({
-                            icon: 'error',
-                            title: 'Jam Mulai Tidak Boleh Melebihi Jam Selesai',
-                        });
-                    }
-                } else {
-                    // Jika startHour kosong, reset min endHour
-                    endHourInput.min = "00:01";
-                }
+            if ($('#waktu').val()) {
+                $('#startHour').prop('disabled', false);
+                $('#endHour').prop('disabled', false);
+            } else {
+                $('#startHour').prop('disabled', true);
+                $('#endHour').prop('disabled', true);
+                $('#startHour').val('');
+                $('#endHour').val('');
             }
+        });
 
+        function validateEndHour() {
+            const startHour = document.getElementById('startHour').value;
+            const endHourInput = document.getElementById('endHour');
+
+            if (startHour) {
+                endHourInput.min = startHour;
+                if (endHourInput.value < startHour && endHourInput.value != '') {
+                    endHourInput.value = '';
+                    alert.fire({
+                        icon: 'error',
+                        title: 'Jam Mulai Tidak Boleh Melebihi Jam Selesai',
+                    });
+                }
+            } else {
+                // Jika startHour kosong, reset min endHour
+                endHourInput.min = "00:01";
+            }
+        }
+
+        $(function() {
             $('#toolbar').find('select').change(function() {
                 $table.bootstrapTable('destroy').bootstrapTable({
                     exportDataType: $(this).val(),
@@ -210,8 +211,9 @@
                         url: "{{ route('api.get.arusAir') }}",
                         data: {
                             _token: '{{ csrf_token() }}',
-                            start_time: startTime,
-                            end_time: endTime
+                            waktu: waktu,
+                            startHour: startHour,
+                            endHour: endHour
                         },
                         dataType: "json",
                         beforeSend: function() {

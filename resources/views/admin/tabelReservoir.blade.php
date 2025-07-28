@@ -204,7 +204,7 @@
                 }
 
                 if (startHour && endHour) {
-                    console.log('Filtering data from', startTime, 'to', endTime);
+                    console.log('Filtering data from', startHour, 'to', endHour);
                     $.ajax({
                         type: "POST",
                         url: "{{ route('api.get.ping') }}",

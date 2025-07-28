@@ -140,7 +140,7 @@
             $('#print').on('click', function(e) {
                 e.preventDefault();
 
-                let url = new URL(`{{ route('umum.rangkuman.cetak') }}`);
+                let url = new URL(`{{ route('admin.rangkuman.cetak') }}`);
                 const startDate = $('#startDate').val();
                 const endDate = $('#endDate').val();
 

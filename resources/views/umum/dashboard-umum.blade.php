@@ -248,15 +248,15 @@
 @endsection
 
 @section('jQuery-extras')
-    <script src="{{ asset('main/js/main-js/lodash.min.js')}}"></script>
-    <script src="{{ asset('main/js/main-js/sweetalert2@11.js')}}" defer></script>
+    <script src="{{ asset('main/js/main-js/lodash.min.js') }}"></script>
+    <script src="{{ asset('main/js/main-js/sweetalert2@11.js') }}" defer></script>
     <script src="{{ asset('main/js/js-fluid-meter.js') }}"></script>
-    <script src="{{ asset('main/js/main-js/jscharting.js')}}" defer></script>
-    <script type="text/javascript" src="{{ asset('main/js/main-js/js-charting/type.js')}}" defer></script>
+    <script src="{{ asset('main/js/main-js/jscharting.js') }}" defer></script>
+    <script type="text/javascript" src="{{ asset('main/js/main-js/js-charting/type.js') }}" defer></script>
     <script src="{{ asset('main/js/main-js/chart.min.js') }}"></script>
     <script src="{{ asset('main/js/main-js/chartjs/Chart.bundle.js') }}" defer></script>
-    <script src="{{ asset('main/js/main-js/chartjs/chartjs-gauge.js')}}" defer></script>
-    <script src="{{ asset('main/js/main-js/chartjs/chartjs-plugin-labels.js')}}" defer></script>
+    <script src="{{ asset('main/js/main-js/chartjs/chartjs-gauge.js') }}" defer></script>
+    <script src="{{ asset('main/js/main-js/chartjs/chartjs-plugin-labels.js') }}" defer></script>
     <script>
         $(document).ready(function() {
             // MQTT Udara
@@ -392,6 +392,21 @@
 
             // EventSource (SSE) by Worker
             var sseWorker = null;
+            let lastSSEData = null;
+            let lastUpdateTime = 0;
+            const updateInterval = 500; // ms
+            let isTabVisible = true;
+            let lastWeatherIcon = '';
+
+            document.addEventListener("visibilitychange", () => {
+                isTabVisible = (document.visibilityState === 'visible');
+                console.log('[Tab Visibility]', isTabVisible);
+                if (!isTabVisible) {
+                    stopSSEWorker();
+                } else {
+                    restartSSEWorker();
+                }
+            });
 
             function initSSEWorker() {
                 if (!sseWorker) {
@@ -404,14 +419,18 @@
                             error
                         } = e.data;
 
-                        if (type === 'message') {
+                        if (type === 'message' && isTabVisible) {
                             try {
-                                const parsedData = JSON.parse(data);
-                                updateUI(parsedData);
+                                const now = Date.now();
+                                if (now - lastUpdateTime > updateInterval) {
+                                    const parsedData = JSON.parse(data);
+                                    lastSSEData = parsedData;
+                                    updateUI(parsedData);
+                                    lastUpdateTime = now;
+                                }
                             } catch (error) {
                                 console.error("Error parsing SSE response from worker:", error);
                             }
-
                         } else if (type === 'error') {
                             console.error("SSE Worker error:", error);
                             restartSSEWorker();
@@ -432,7 +451,10 @@
                 window.myGauge.update();
 
                 let iconUrl = data.weather.icon ? 'https:' + data.weather.icon : '';
-                $('#weather-icon').attr('src', iconUrl);
+                if (iconUrl !== lastWeatherIcon) {
+                    $('#weather-icon').attr('src', iconUrl);
+                    lastWeatherIcon = iconUrl;
+                }
 
                 $('#weather-description').text(data.weather.condition || '--');
                 $('#current-time').text(data.localtime + 'WIB' || '--:--:-- WIB');
@@ -467,6 +489,7 @@
             }
 
             let isRestarting = false;
+
             function restartSSEWorker() {
                 if (isRestarting) return;
                 isRestarting = true;

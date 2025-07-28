@@ -747,6 +747,20 @@
             // EventSource (SSE) by Worker
             var sseWorker = null;
             let lastSSEData = null;
+            let lastUpdateTime = 0;
+            const updateInterval = 500; // ms
+            let isTabVisible = true;
+            let lastWeatherIcon = '';
+
+            document.addEventListener("visibilitychange", () => {
+                isTabVisible = (document.visibilityState === 'visible');
+                console.log('[Tab Visibility]', isTabVisible);
+                if (!isTabVisible) {
+                    stopSSEWorker();
+                } else {
+                    restartSSEWorker();
+                }
+            });
 
             function initSSEWorker() {
                 if (!sseWorker) {
@@ -760,15 +774,18 @@
                             error
                         } = e.data;
 
-                        if (type === 'message') {
+                        if (type === 'message' && isTabVisible) {
                             try {
-                                const parsedData = JSON.parse(data);
-                                lastSSEData = parsedData;
-                                updateUI(parsedData);
+                                const now = Date.now();
+                                if (now - lastUpdateTime > updateInterval) {
+                                    const parsedData = JSON.parse(data);
+                                    lastSSEData = parsedData;
+                                    updateUI(parsedData);
+                                    lastUpdateTime = now;
+                                }
                             } catch (error) {
                                 console.error("Error parsing SSE response from worker:", error);
                             }
-
                         } else if (type === 'error') {
                             console.error("SSE Worker error:", message);
                             restartSSEWorker();
@@ -792,7 +809,10 @@
                 }
 
                 let iconUrl = data.weather.icon ? 'https:' + data.weather.icon : '';
-                $('#weather-icon').attr('src', iconUrl);
+                if (iconUrl !== lastWeatherIcon) {
+                    $('#weather-icon').attr('src', iconUrl);
+                    lastWeatherIcon = iconUrl;
+                }
 
                 $('#weather-description').text(data.weather.condition || '--');
                 $('#current-time').text(data.localtime + 'WIB' || '--:--:-- WIB');

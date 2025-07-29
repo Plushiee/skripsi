@@ -214,7 +214,7 @@ class UmumController extends Controller
         }
 
         try {
-            $url = url('/rangkuman-print?s=' . urlencode($s) . '&e=' . urlencode($e));
+            $url = route('umum.rangkuman.print', ['s' => $s, 'e' => $e]);
             $pdfPath = storage_path('app/public/Rangkuman-' . $s . '-to-' . $e . '.pdf');
 
             // Jalankan perintah untuk generate PDF dari URL

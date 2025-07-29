@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <link rel="stylesheet" href="{{ asset('main/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ public_path('main/css/bootstrap.min.css') }}">
 
     <title>HYDROSENSE | Rangkuman Data</title>
     <style>
@@ -52,7 +52,7 @@
         <nav class="navbar" style="background: #008000;">
             <div class="container-fluid d-flex align-items-center">
                 <a class="navbar-brand d-flex align-items-center">
-                    <img src="{{ asset('main/img/LOGO-FAK-BIOTEK.png') }}" alt="Logo" width="25"
+                    <img src="{{ public_path('main/img/LOGO-FAK-BIOTEK.png') }}" alt="Logo" width="25"
                         class="d-inline-block ms-2">
                     <span class="fw-bold text-light ms-2">HYDROSENSE</span>
                 </a>
@@ -95,11 +95,11 @@
         </div>
     </div>
 
-    <script src="{{ asset('main/js/popper.min.js') }}"></script>
-    <script src="{{ asset('main/css/bootstrap.min.css') }}"></script>
-    <script src="{{ asset('main/js/jquery-3.7.1.min.js') }}"></script>
-    <script src="{{ asset('main/js/chart.js') }}"></script>
-    <script src="{{ asset('main/js/chartjs-plugin-datalabels.min.js') }}"></script>
+    <script src="{{ public_path('main/js/popper.min.js') }}"></script>
+    <script src="{{ public_path('main/css/bootstrap.min.css') }}"></script>
+    <script src="{{ public_path('main/js/jquery-3.7.1.min.js') }}"></script>
+    <script src="{{ public_path('main/js/chart.js') }}"></script>
+    <script src="{{ public_path('main/js/chartjs-plugin-datalabels.min.js') }}"></script>
 
     <script>
         $(document).ready(function() {

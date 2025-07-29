@@ -20,7 +20,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('/admin')->name('admin.')->gro
     Route::get('/tabel-reservoir', [AdminController::class, 'tabelReservoir'])->name('tabel.reservoir');
     Route::get('/pengaturan-akun', [AdminController::class, 'pengaturanAkun'])->name('akun-admin.pengaturan');
 
-    Route::get('/rangkuman-print', [UmumController::class, 'rangkumanPrint'])->name('rangkuman.print');
+    Route::get('/rangkuman-print', [AdminController::class, 'rangkumanPrint'])->name('rangkuman.print');
 });
 
 // Kelompok Rute untuk Admin Master
@@ -37,7 +37,7 @@ Route::middleware(['auth', 'role:admin-master'])->prefix('/admin-master')->name(
     Route::get('/daftar-admin', [AdminMasterController::class, 'daftarAdmin'])->name('akun.daftar-admin');
     Route::get('/daftar-admin/view/{id}', [AdminMasterController::class, 'viewAdmin'])->name('akun.daftar-admin.view');
 
-    Route::get('/rangkuman-print', [UmumController::class, 'rangkumanPrint'])->name('rangkuman.print');
+    Route::get('/rangkuman-print', [AdminMasterController::class, 'rangkumanPrint'])->name('rangkuman.print');
 });
 
 // Kelompok Rute untuk Umum

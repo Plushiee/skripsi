@@ -6,7 +6,13 @@ import puppeteer from 'puppeteer';
     const outputFile = args[1]; // Jalur file PDF
 
     const browser = await puppeteer.launch({
-        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--unlimited-storage', '--full-memory-crash-report'],
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--unlimited-storage',
+            '--full-memory-crash-report'
+        ],
         cacheDirectory: 'C:\\Users\\Administrator\\.puppeteer',
         headless: true,
     });
@@ -14,10 +20,26 @@ import puppeteer from 'puppeteer';
     const page = await browser.newPage();
 
     try {
-        // Buka halaman HTML
-        await page.goto(inputFile, { waitUntil: 'networkidle0' });
+        await page.goto(inputFile, {
+            waitUntil: 'networkidle0',
+            timeout: 0 // Hindari timeout jika grafik lambat
+        });
 
-        // Generate PDF
+        // ⏳ Tunggu sampai semua canvas punya tinggi > 0 (grafik selesai render)
+        await page.waitForFunction(() => {
+            const canvases = document.querySelectorAll('canvas');
+            if (canvases.length === 0) return false;
+
+            return Array.from(canvases).every(canvas => {
+                return canvas.offsetHeight > 0 && canvas.offsetWidth > 0;
+            });
+        }, {
+            timeout: 10000 // Tunggu maksimal 10 detik
+        });
+
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        // 1 detik ekstra untuk stabilisasi
+
         await page.pdf({
             path: outputFile,
             format: 'A4',
@@ -25,10 +47,10 @@ import puppeteer from 'puppeteer';
             printBackground: true,
         });
 
-        console.log('PDF berhasil dibuat:', outputFile);
+        console.log('OK: PDF berhasil dibuat:', outputFile);
 
     } catch (error) {
-        console.error('Gagal membuat PDF:', error);
+        console.error('ERR: Gagal membuat PDF:', error);
         process.exit(1);
     } finally {
         await browser.close();

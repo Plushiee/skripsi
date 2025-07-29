@@ -6,9 +6,10 @@ use App\Http\Controllers\AdminMasterController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UmumController;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 
 // Kelompok Rute untuk Admin
-Route::middleware(['auth','role:admin'])->prefix('/admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'role:admin'])->prefix('/admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboardAdmin'])->name('dashboard');
     Route::get('/rangkuman', [AdminController::class, 'rangkuman'])->name('rangkuman');
     Route::get('/rangkuman/cetak', [AdminController::class, 'rangkumanCetak'])->name('rangkuman.cetak');
@@ -45,6 +46,8 @@ Route::middleware(['redirectIfAuthenticated', 'guest'])->prefix('/')->name('umum
     Route::get('/tabel-udara', [UmumController::class, 'tabelUdara'])->name('tabel.udara');
     Route::get('/tabel-arus', [UmumController::class, 'tabelArus'])->name('tabel.arus');
     Route::get('/tabel-reservoir', [UmumController::class, 'tabelReservoir'])->name('tabel.reservoir');
+
+    Route::get('/rangkuman-print', [UmumController::class, 'rangkumanPrint'])->name('rangkuman.print');
 });
 
 Route::get('/check-session', function () {

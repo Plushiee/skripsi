@@ -200,6 +200,24 @@ class AdminController extends Controller
         }
     }
 
+    public function rangkumanPrint(Request $request)
+    {
+        $s = $request->query('s');
+        $e = $request->query('e');
+
+        $data = $this->getRangkumanData($s, $e);
+
+        if (!$s && !$e) {
+            $e = Carbon::now()->format('d-m-Y');
+            $s = Carbon::parse($e)->subDays(8)->format('d-m-Y');
+        } elseif ($s && !$e) {
+            $e = Carbon::now()->format('d-m-Y');
+        } elseif (!$s && $e) {
+            $s = Carbon::parse($e)->subDays(8)->format('d-m-Y');
+        }
+        return view('PDF.rangkuman', compact('data', 's', 'e'));
+    }
+
     public function tabelPH()
     {
         return view('admin.tabelPH');

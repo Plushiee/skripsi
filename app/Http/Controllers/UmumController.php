@@ -136,13 +136,73 @@ class UmumController extends Controller
         return view('umum.rangkuman', ['data' => $data]);
     }
 
+    // public function rangkumanCetak(Request $request)
+    // {
+    //     $s = $request->query('s');
+    //     $e = $request->query('e');
+
+    //     // Ambil data rangkuman
+    //     $data = $this->getRangkumanData($s, $e);
+
+    //     if (!$s && !$e) {
+    //         $e = Carbon::now()->format('d-m-Y');
+    //         $s = Carbon::parse($e)->subDays(8)->format('d-m-Y');
+    //     } elseif ($s && !$e) {
+    //         $e = Carbon::now()->format('d-m-Y');
+    //     } elseif (!$s && $e) {
+    //         $s = Carbon::parse($e)->subDays(8)->format('d-m-Y');
+    //     }
+
+    //     try {
+    //         // Render HTML ke file sementara
+    //         $view = view('PDF.rangkuman', ['data' => $data, 's' => $s, 'e' => $e])->render();
+    //         $htmlPath = storage_path('app\public\temp_rangkuman.html');
+
+    //         file_put_contents($htmlPath, $view);
+
+    //         // Encode URL untuk mengatasi spasi atau karakter khusus
+    //         $encodedHtmlPath = 'file:///' . str_replace(' ', '%20', str_replace('\\', '/', $htmlPath));
+    //         // Log::info("Encoded HTML path: $encodedHtmlPath");
+    //         $pdfPath = storage_path('app\public\Rangkuman-' . $s . '-to-' . $e . '.pdf');
+
+    //         // Jalankan perintah untuk menghasilkan PDF
+    //         $command = "node ../node/generate-pdf.js \"$encodedHtmlPath\" \"$pdfPath\"";
+
+    //         if (!file_exists($htmlPath)) {
+    //             return response()->json(['error' => 'HTML file not found.'], 500);
+    //         }
+
+    //         exec($command . ' 2>&1', $output, $returnVar);
+
+    //         // Log::info('Current working directory: ' . getcwd());
+    //         // Log::info('Command executed: ' . $command);
+    //         // Log::info("Command output: " . implode("\n", $output));
+    //         // Log::info("Command return value: $returnVar");
+
+    //         // Jika proses gagal
+    //         if ($returnVar !== 0 || !file_exists($pdfPath)) {
+    //             // Log::error("Proses generate PDF gagal: " . implode("\n", $output));
+    //             return response()->json(['error' => 'Gagal membuat file PDF.'], 500);
+    //         }
+
+    //         // Hapus file HTML sementara
+    //         unlink($htmlPath);
+
+    //         // Kirim file PDF ke client dan hapus setelah dikirim
+    //         return response()->file($pdfPath, [
+    //             'Content-Type' => 'application/pdf',
+    //             'Content-Disposition' => 'inline; filename="Rangkuman-' . $s . '-to-' . $e . '.pdf"',
+    //         ])->deleteFileAfterSend(true);
+    //     } catch (\Exception $e) {
+    //         // Log::error("Error saat mencetak rangkuman: " . $e->getMessage());
+    //         return response()->json(['error' => 'Terjadi kesalahan saat mencetak rangkuman.'], 500);
+    //     }
+    // }
+
     public function rangkumanCetak(Request $request)
     {
         $s = $request->query('s');
         $e = $request->query('e');
-
-        // Ambil data rangkuman
-        $data = $this->getRangkumanData($s, $e);
 
         if (!$s && !$e) {
             $e = Carbon::now()->format('d-m-Y');
@@ -154,49 +214,49 @@ class UmumController extends Controller
         }
 
         try {
-            // Render HTML ke file sementara
-            $view = view('PDF.rangkuman', ['data' => $data, 's' => $s, 'e' => $e])->render();
-            $htmlPath = storage_path('app\public\temp_rangkuman.html');
+            $url = url('/rangkuman-print?s=' . urlencode($s) . '&e=' . urlencode($e));
+            $pdfPath = storage_path('app/public/Rangkuman-' . $s . '-to-' . $e . '.pdf');
 
-            file_put_contents($htmlPath, $view);
-
-            // Encode URL untuk mengatasi spasi atau karakter khusus
-            $encodedHtmlPath = 'file:///' . str_replace(' ', '%20', str_replace('\\', '/', $htmlPath));
-            // Log::info("Encoded HTML path: $encodedHtmlPath");
-            $pdfPath = storage_path('app\public\Rangkuman-' . $s . '-to-' . $e . '.pdf');
-
-            // Jalankan perintah untuk menghasilkan PDF
-            $command = "node ../node/generate-pdf.js \"$encodedHtmlPath\" \"$pdfPath\"";
-
-            if (!file_exists($htmlPath)) {
-                return response()->json(['error' => 'HTML file not found.'], 500);
-            }
+            // Jalankan perintah untuk generate PDF dari URL
+            $command = "node ../node/generate-pdf.js \"$url\" \"$pdfPath\"";
 
             exec($command . ' 2>&1', $output, $returnVar);
 
-            // Log::info('Current working directory: ' . getcwd());
-            // Log::info('Command executed: ' . $command);
-            // Log::info("Command output: " . implode("\n", $output));
-            // Log::info("Command return value: $returnVar");
+            Log::info('Current working directory: ' . getcwd());
+            Log::info('Command executed: ' . $command);
+            Log::info("Command output: " . implode("\n", $output));
+            Log::info("Command return value: $returnVar");
 
-            // Jika proses gagal
             if ($returnVar !== 0 || !file_exists($pdfPath)) {
-                // Log::error("Proses generate PDF gagal: " . implode("\n", $output));
                 return response()->json(['error' => 'Gagal membuat file PDF.'], 500);
             }
-
-            // Hapus file HTML sementara
-            unlink($htmlPath);
 
             // Kirim file PDF ke client dan hapus setelah dikirim
             return response()->file($pdfPath, [
                 'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'inline; filename="Rangkuman-' . $s . '-to-' . $e . '.pdf"',
+                'Content-Disposition' => 'inline; filename=\"Rangkuman-' . $s . '-to-' . $e . '.pdf\"',
             ])->deleteFileAfterSend(true);
         } catch (\Exception $e) {
-            // Log::error("Error saat mencetak rangkuman: " . $e->getMessage());
             return response()->json(['error' => 'Terjadi kesalahan saat mencetak rangkuman.'], 500);
         }
+    }
+
+    public function rangkumanPrint(Request $request)
+    {
+        $s = $request->query('s');
+        $e = $request->query('e');
+
+        $data = $this->getRangkumanData($s, $e);
+
+        if (!$s && !$e) {
+            $e = Carbon::now()->format('d-m-Y');
+            $s = Carbon::parse($e)->subDays(8)->format('d-m-Y');
+        } elseif ($s && !$e) {
+            $e = Carbon::now()->format('d-m-Y');
+        } elseif (!$s && $e) {
+            $s = Carbon::parse($e)->subDays(8)->format('d-m-Y');
+        }
+        return view('PDF.rangkuman', compact('data', 's', 'e'));
     }
 
     public function tabelPH()

@@ -31,19 +31,26 @@
                                     class="bi bi-printer-fill"></i></button>
                         </div>
                     </div>
-                    <div class="row my-2 py-2" id="dateFilters" style="display: none;">
-                        <div class="col-12 col-sm-6">
-                            <label for="startDate" class="form-label">Tanggal Mulai :</label>
-                            <input type="text" id="startDate" class="form-control datepicker"
-                                placeholder="Pilih tanggal mulai">
+                    <div id="dateFilters" style="display: none;">
+                        <div class="row my-2 py-2">
+                            <div class="col-12 col-sm-6">
+                                <label for="startDate" class="form-label">Tanggal Mulai :</label>
+                                <input type="text" id="startDate" class="form-control datepicker"
+                                    placeholder="Pilih tanggal mulai">
+                            </div>
+                            <div class="col-12 col-sm-6 mt-2 mt-sm-0">
+                                <label for="endDate" class="form-label">Tanggal Selesai :</label>
+                                <input type="text" id="endDate" class="form-control datepicker"
+                                    placeholder="Pilih tanggal selesai">
+                            </div>
                         </div>
-                        <div class="col-12 col-sm-6 mt-2 mt-sm-0">
-                            <label for="endDate" class="form-label">Tanggal Selesai :</label>
-                            <input type="text" id="endDate" class="form-control datepicker"
-                                placeholder="Pilih tanggal selesai">
-                        </div>
-                        <div class="text-end mt-3">
-                            <button id="applyFilter" class="btn btn-primary">Terapkan Filter</button>
+                        <div class="row">
+                            <div class="col-12 d-flex flex-column flex-sm-row justify-content-sm-end gap-2 px-2 mt-2">
+                                <button type="button" id="resetFilter" class="btn btn-warning w-100 w-sm-auto">Reset
+                                    Filter</button>
+                                <button type="button" id="applyFilter" class="btn btn-primary w-100 w-sm-auto">Terapkan
+                                    Filter</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -127,6 +134,16 @@
             const urlParams = new URLSearchParams(window.location.search);
             const startDateFromURL = urlParams.get('s');
             const endDateFromURL = urlParams.get('e');
+
+            // Reset filter
+            $('#resetFilter').on('click', function() {
+                $('#startDate').val('');
+                $('#endDate').val('');
+                const url = new URL(window.location.href);
+                url.searchParams.delete('s');
+                url.searchParams.delete('e');
+                window.location.href = url.toString();
+            });
 
             // Set nilai input startDate dan endDate jika ada di URL
             if (startDateFromURL) {

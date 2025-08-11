@@ -423,6 +423,7 @@
             // Fungsi Visibilitas Kontrol
             function updateVisibility(notificationOtomatis = true) {
                 if ($('#automatic-switch').is(':checked')) {
+                    stopSSEWorker();
                     $('#pump-control').slideUp();
                     $('#temperature-control, #status-pompa').slideDown();
                     isAutomatic = true;
@@ -436,7 +437,9 @@
                             }
                         });
                     }
+                    restartSSEWorker();
                 } else {
+                    stopSSEWorker();
                     $('#pump-control').slideDown();
                     $('#temperature-control, #status-pompa').slideUp();
                     isAutomatic = false;
@@ -451,6 +454,7 @@
                             }
                         });
                     };
+                    restartSSEWorker();
                 }
 
                 if ($('#pump-switch').is(':checked') && !$('#automatic-switch').is(':checked')) {
@@ -517,10 +521,10 @@
 
             // Fungsi: Kirim Status Pompa
             function sendPompaStatus(status, otomatis = false) {
+                let loadingMessage = status === 'nyala' ? 'Menyalakan' : 'Mematikan';
+
                 updatePumpStatus(status);
                 stopSSEWorker();
-
-                let loadingMessage = status === 'nyala' ? 'Menyalakan' : 'Mematikan';
 
                 if (notification) {
                     alert.fire({
@@ -781,6 +785,9 @@
                                 if (now - lastUpdateTime > updateInterval) {
                                     const parsedData = JSON.parse(data);
                                     lastSSEData = parsedData;
+                                    if (isUserInteracting == true) {
+                                        lastSSEData.suhu_pompa = $('#temperature-input').val() || 0;
+                                    }
                                     updateUI(parsedData);
                                     lastUpdateTime = now;
                                 }

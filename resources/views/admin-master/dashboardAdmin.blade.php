@@ -421,65 +421,91 @@
             });
 
             // Fungsi Visibilitas Kontrol
-            function updateVisibility(notificationOtomatis = true) {
-                if ($('#automatic-switch').is(':checked')) {
-                    $('#pump-control').slideUp();
-                    $('#temperature-control, #status-pompa').slideDown();
-                    isAutomatic = true;
-                    if (notificationOtomatis) {
-                        alert.fire({
-                            icon: 'info',
-                            title: 'Menyalakan Sistem Otomatis',
-                            timer: 17000,
-                            didOpen: () => {
-                                Swal.showLoading();
-                            }
-                        });
+            function updateVisibility(notificationOtomatis = true, manual = false) {
+                $('#pump-switch, #automatic-switch').prop('disabled', true);
+                stopSSEWorker();
+                isUserInteracting = true;
+
+                if (!manual) {
+                    if ($('#automatic-switch').is(':checked')) {
+                        $('#pump-control').slideUp();
+                        $('#temperature-control, #status-pompa').slideDown();
+                        isAutomatic = true;
+                        status_pompa = $('#temperature-input').val() <= temperatureThreshold ? 'nyala' : 'mati';
+                        if (notificationOtomatis) {
+                            alert.fire({
+                                icon: 'info',
+                                title: 'Menyalakan Sistem Otomatis',
+                                timer: 17000,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+                        }
+                        restartSSEWorker();
+                        sendPompaStatus(pumpStatus, isAutomatic);
+                    } else {
+                        $('#pump-control').slideDown();
+                        $('#temperature-control, #status-pompa').slideUp();
+                        isAutomatic = false;
+                        pumpStatus = 'mati';
+                        if (notificationOtomatis) {
+                            alert.fire({
+                                icon: 'info',
+                                title: 'Mematikan Sistem Otomatis',
+                                timer: 17000,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+                        };
+                        restartSSEWorker();
+                        sendPompaStatus(pumpStatus, isAutomatic);
                     }
-                } else {
-                    $('#pump-control').slideDown();
-                    $('#temperature-control, #status-pompa').slideUp();
-                    isAutomatic = false;
-                    pumpStatus = 'mati';
-                    if (notificationOtomatis) {
-                        alert.fire({
-                            icon: 'info',
-                            title: 'Mematikan Sistem Otomatis',
-                            timer: 17000,
-                            didOpen: () => {
-                                Swal.showLoading();
-                            }
-                        });
-                    };
+                } else if (manual) {
+                    if ($('#pump-switch').is(':checked')) {
+                        $('#automatic-switch').prop('disabled', true);
+                        pumpStatus = 'nyala';
+                        isAutomatic = false;
+                        notification = true;
+                        sendPompaStatus(pumpStatus, isAutomatic);
+                    } else {
+                        $('#automatic-switch').prop('disabled', false);
+                        pumpStatus = 'mati';
+                        isAutomatic = false;
+                        notification = true;
+                        sendPompaStatus(pumpStatus, isAutomatic);
+                    }
                 }
+                // if ($('#pump-switch').is(':checked') && !$('#automatic-switch').is(':checked')) {
+                //     $('#automatic-switch').prop('disabled', true);
+                //     pumpStatus = 'nyala';
+                //     isAutomatic = false;
+                //     notification = true;
+                //     sendPompaStatus(pumpStatus, isAutomatic);
+                // } else if (!$('#pump-switch').is(':checked') && !$('#automatic-switch').is(':checked')) {
+                //     $('#automatic-switch').prop('disabled', false);
+                //     pumpStatus = 'mati';
+                //     isAutomatic = false;
+                //     notification = true;
+                //     sendPompaStatus(pumpStatus, isAutomatic);
+                // }
 
-                if ($('#pump-switch').is(':checked') && !$('#automatic-switch').is(':checked')) {
-                    $('#automatic-switch').prop('disabled', true);
-                    pumpStatus = 'nyala';
-                    isAutomatic = false;
-                    notification = true;
-                    sendPompaStatus(pumpStatus, isAutomatic);
-                } else if (!$('#pump-switch').is(':checked') && !$('#automatic-switch').is(':checked')) {
-                    $('#automatic-switch').prop('disabled', false);
-                    pumpStatus = 'mati';
-                    isAutomatic = false;
-                    notification = true;
-                    sendPompaStatus(pumpStatus, isAutomatic);
-                }
-
-                // Buat disable tombol setelah perubahan selama 5 detik
+                // Buat disable tombol setelah perubahan selama 17 detik
                 $('#pump-switch, #automatic-switch').prop('disabled', true);
                 setTimeout(function() {
                     $('#pump-switch, #automatic-switch').prop(
                         'disabled',
                         false);
-                }, 5000);
+                }, 17000);
                 checkTemperature();
             }
 
             // Event Switch Otomatis dan Manual
             $('#automatic-switch').change(updateVisibility);
-            $('#pump-switch').change(updateVisibility);
+            $('#pump-switch').change(function() {
+                updateVisibility(false, true);
+            });
             $('#temperature-input').change(function() {
                 updateVisibility(false);
             });
@@ -520,12 +546,11 @@
                 updatePumpStatus(status);
                 stopSSEWorker();
 
-                let loadingMessage = status === 'nyala' ? 'Menyalakan' : 'Mematikan';
 
                 if (notification) {
                     alert.fire({
                         icon: 'info',
-                        title: loadingMessage + ' Pompa...',
+                        title: 'Mengubah Pengaturan Pompa...',
                         timer: 17000,
                         didOpen: () => {
                             Swal.showLoading();
@@ -553,7 +578,7 @@
                             restartSSEWorker();
                             alert.fire({
                                 icon: 'success',
-                                title: status === 'nyala' ? 'Pompa Menyala!' : 'Pompa Mati!',
+                                title: 'Pengaturan Pompa Berhasil Dirubah!',
                                 timer: 2500,
                             });
                             isUserInteractingBtn = false;
@@ -780,6 +805,13 @@
                                 if (now - lastUpdateTime > updateInterval) {
                                     const parsedData = JSON.parse(data);
                                     lastSSEData = parsedData;
+                                    if (isUserInteracting == true) {
+                                        lastSSEData.suhu_pompa = $('#temperature-input').val() || 0;
+                                        lastSSEData.status_pompa = $('#pump-switch').is(':checked') ? 1 : 0;
+                                        lastSSEData.otomatis_pompa = $('#automatic-switch').is(':checked') ? 1 : 0;
+                                    }
+                                    console.log('Is User Interacting:', isUserInteracting);
+                                    console.log('Last SSE Data:', lastSSEData);
                                     updateUI(parsedData);
                                     lastUpdateTime = now;
                                 }
@@ -803,7 +835,7 @@
                 updateStatus(data.status_sensor, data.status_relay);
 
                 if (isUserInteracting === false) {
-                    if ($('#temperature-input').val() != (data.suhu_pompa ?? 0)) {
+                    if ($('#temperature-input').val() != (data.suhu_pompa ?? null)) {
                         $('#temperature-input').val(data.suhu_pompa ?? 0);
                     }
                 }

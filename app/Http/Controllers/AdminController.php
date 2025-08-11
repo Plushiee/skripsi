@@ -215,7 +215,7 @@ class AdminController extends Controller
         }
 
         try {
-            $url = route('admin.rangkuman.print', ['s' => $s, 'e' => $e]);
+            $url = route('umum.rangkuman.print', ['s' => $s, 'e' => $e]);
             $pdfPath = storage_path('app/public/Rangkuman-' . $s . '-to-' . $e . '.pdf');
 
             // Jalankan perintah untuk generate PDF dari URL

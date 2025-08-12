@@ -688,6 +688,8 @@
 
                 if (sendmqtt) {
                     checkTemperature();
+                } else {
+                    checkTemperature(false);
                 }
             }
 
@@ -882,11 +884,6 @@
                 if (isUserInteracting === false) {
                     if ($('#temperature-input').val() != (data.suhu_pompa ?? 0)) {
                         $('#temperature-input').val(data.suhu_pompa ?? 0);
-                        if (data.suhu_pompa <= data.suhu) {
-                            updatePumpStatus('nyala');
-                        } else {
-                            updatePumpStatus('mati');
-                        }
                     }
                 }
                 let iconUrl = data.weather.icon ? 'https:' + data.weather.icon : '';
@@ -909,11 +906,6 @@
                     if (data.otomatis_pompa == 1) {
                         $('#pump-control').slideUp();
                         $('#temperature-control, #status-pompa').slideDown();
-                        if (data.suhu_pompa <= data.suhu) {
-                            updatePumpStatus('nyala');
-                        } else {
-                            updatePumpStatus('mati');
-                        }
                     } else {
                         $('#pump-control').slideDown();
                         $('#temperature-control, #status-pompa').slideUp();

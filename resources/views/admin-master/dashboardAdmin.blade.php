@@ -905,6 +905,11 @@
                     if (data.otomatis_pompa == 1) {
                         $('#pump-control').slideUp();
                         $('#temperature-control, #status-pompa').slideDown();
+                        if (data.suhu_pompa <= data.suhu) {
+                            updatePumpStatus('nyala');
+                        } else {
+                            updatePumpStatus('mati');
+                        }
                     } else {
                         $('#pump-control').slideDown();
                         $('#temperature-control, #status-pompa').slideUp();

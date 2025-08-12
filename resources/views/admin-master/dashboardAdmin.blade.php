@@ -883,8 +883,10 @@
                     if ($('#temperature-input').val() != (data.suhu_pompa ?? null)) {
                         $('#temperature-input').val(data.suhu_pompa ?? 0);
                         if (data.suhu_pompa <= data.suhu) {
+                            console.log('Pump is ON due to temperature condition.', data.suhu_pompa, data.suhu);
                             updatePumpStatus('nyala');
                         } else {
+                            console.log('Pump is OFF due to temperature condition.', data.suhu_pompa, data.suhu);
                             updatePumpStatus('mati');
                         }
                     }
@@ -911,8 +913,10 @@
                         $('#pump-control').slideUp();
                         $('#temperature-control, #status-pompa').slideDown();
                         if (data.suhu_pompa <= data.suhu) {
+                            console.log('Pump is ON due to temperature condition.', data.suhu_pompa, data.suhu);
                             updatePumpStatus('nyala');
                         } else {
+                            console.log('Pump is OFF due to temperature condition.', data.suhu_pompa, data.suhu);
                             updatePumpStatus('mati');
                         }
                     } else {

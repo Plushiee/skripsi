@@ -516,6 +516,7 @@
                         sendPompaStatus(pumpStatus, isAutomatic);
                     }
                 }
+
                 // if ($('#pump-switch').is(':checked') && !$('#automatic-switch').is(':checked')) {
                 //     $('#automatic-switch').prop('disabled', true);
                 //     pumpStatus = 'nyala';
@@ -816,6 +817,8 @@
             // EventSource (SSE) by Worker
             var sseWorker = null;
             let lastSSEData = null;
+            let lastAutomatic = null;
+            let lastPumpStatus = null;
             let lastUpdateTime = 0;
             const updateInterval = 500; // ms
             let isTabVisible = true;
@@ -833,7 +836,7 @@
 
             function initSSEWorker() {
                 if (!sseWorker) {
-                    sseWorker = new Worker("https://skripsi.plushi.ee/main/js/sse-worker.js");
+                    sseWorker = new Worker("{{ asset('main/js/sse-worker.js') }}");
 
                     // Handle pesan dari Worker
                     sseWorker.onmessage = (e) => {
@@ -881,15 +884,11 @@
                         $('#temperature-input').val(data.suhu_pompa ?? 0);
                     }
                 }
-
-                $('#automatic-switch').prop('checked', data.otomatis_pompa == 1);
-                $('#pump-switch').prop('checked', data.status_pompa == 1);
-
-                window.myGauge.data.datasets[0].value = data.arusAir || 0;
-                window.myGauge.update();
-
                 let iconUrl = data.weather.icon ? 'https:' + data.weather.icon : '';
-                $('#weather-icon').attr('src', iconUrl);
+                if (iconUrl !== lastWeatherIcon) {
+                    $('#weather-icon').attr('src', iconUrl);
+                    lastWeatherIcon = iconUrl;
+                }
 
                 $('#weather-description').text(data.weather.condition || '--');
                 $('#current-time').text(data.localtime + 'WIB' || '--:--:-- WIB');
@@ -900,6 +899,25 @@
                 let iconClass = (hours >= 6 && hours < 18) ? 'fas fa-sun icon-sun' : 'fas fa-moon icon-moon';
                 $('#time-icon').attr('class', iconClass);
 
+                if (lastAutomatic != data.otomatis_pompa) {
+                    $('#automatic-switch').prop('checked', data.otomatis_pompa == 1);
+                    if (data.otomatis_pompa == 1) {
+                        $('#pump-control').slideUp();
+                        $('#temperature-control, #status-pompa').slideDown();
+                    } else {
+                        $('#pump-control').slideDown();
+                        $('#temperature-control, #status-pompa').slideUp();
+                    }
+                    lastAutomatic = data.otomatis_pompa;
+                }
+
+                if (lastPumpStatus != data.status_pompa) {
+                    $('#pump-switch').prop('checked', data.status_pompa == 1);
+                    lastPumpStatus = data.status_pompa;
+                }
+
+                window.myGauge.data.datasets[0].value = data.arusAir || 0;
+                window.myGauge.update();
 
                 const maxPing = 22;
                 const ping = Math.max(data.ping ?? 0, 0);

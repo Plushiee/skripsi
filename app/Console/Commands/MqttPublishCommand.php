@@ -19,6 +19,10 @@ class MqttPublishCommand extends Command
     public function handle()
     {
         $mqtt = null;
+        $isPompaChanged = false;
+        $isSuhuChanged = false;
+        $lastPompaId = null;
+        $lastSuhuId = null;
 
         while (true) {
             try {
@@ -33,18 +37,49 @@ class MqttPublishCommand extends Command
                 $this->publishDumpData($mqtt);
 
                 $pompa = TabelPompaModel::orderByDesc('id')->first();
-                $suhu = TabelTempHumModel::orderByDesc('id')->first();
+                if ($pompa && $pompa->id === $lastPompaId) {
+                    $isPompaChanged = false;
+                } else {
+                    $lastPompaId = $pompa ? $pompa->id : null;
+                    $isPompaChanged = true;
+                }
 
-                if ($pompa) {
-                    if ($pompa->otomatis == 1) {
-                        if ($suhu && $pompa->suhu < $suhu->temperature) {
+                // echo sprintf("Current pump ID: %s\n", $pompa ? $pompa->id : 'None');
+                // echo sprintf("otomatis: %s, status: %s\n", $pompa ? $pompa->otomatis : 'None', $pompa ? $pompa->status : 'None');
+
+                $cachedData = cache('sse-update-event', []);
+                if (!empty($cachedData) && isset($cachedData['tempHum']['temperature'])) {
+                    $suhu = (object)[
+                        'temperature' => $cachedData['tempHum']['temperature'],
+                        'id' => $cachedData['tempHum']['id'] ?? null
+                    ];
+                } else {
+                    $suhu = TabelTempHumModel::orderByDesc('id')->first();
+                }
+
+                $isSuhuChanged = false;
+                if ($suhu && isset($suhu->id) && $suhu->id === $lastSuhuId) {
+                    $isSuhuChanged = false;
+                } else {
+                    $lastSuhuId = $suhu && isset($suhu->id) ? $suhu->id : null;
+                    $isSuhuChanged = true;
+                }
+
+                // echo sprintf("Current temperature ID: %s, Temperature: %s\n", $suhu ? $suhu->id : 'None', $suhu ? $suhu->temperature : 'None');
+
+                if ($pompa && $pompa->otomatis == 1) {
+                    // echo sprintf("Otomatis mode: Checking temperature for pump ID %d\n", $pompa->id);
+                    if ($suhu && $suhu->temperature > $pompa->suhu) {
+                        if ($isPompaChanged || $isSuhuChanged) {
                             $this->publishPumpStatus($mqtt, 'nyala');
-                        } else {
-                            $this->publishPumpStatus($mqtt, 'mati');
                         }
                     } else {
-                        $this->publishPumpStatus($mqtt, $pompa->status);
+                        if ($isPompaChanged || $isSuhuChanged) {
+                            $this->publishPumpStatus($mqtt, 'mati');
+                        }
                     }
+                } elseif ($pompa) {
+                    $this->publishPumpStatus($mqtt, $pompa->status);
                 }
 
                 sleep(1);

@@ -1,0 +1,1 @@
+python -u "C:\Users\Administrator\Documents\GitHub\skripsi\subs.py"
